@@ -1,0 +1,56 @@
+# =============================================================================
+# AgriPulse AI — .gitignore
+# =============================================================================
+
+# --- Environment and secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# --- Node.js / Frontend ---
+node_modules/
+frontend/dist/
+frontend/build/
+*.tsbuildinfo
+
+# --- Data (raw data may contain large files / sensitive content) ---
+data/raw/
+data/processed/
+data/evaluation/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Docker ---
+*.log
+
+# --- Misc ---
+*.bak
+*.tmp
