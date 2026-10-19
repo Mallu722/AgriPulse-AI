@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.health import router as health_router
+from app.api.ingestion import router as ingestion_router
 
 # --- Application Factory ---
 app = FastAPI(
@@ -27,9 +28,6 @@ app = FastAPI(
 )
 
 # --- CORS Middleware ---
-# The frontend (React on localhost:5173) and backend (FastAPI on localhost:8000)
-# run on different origins. CORS allows the browser to permit cross-origin requests.
-# In production, restrict this to only the deployed frontend domain.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -39,9 +37,8 @@ app.add_middleware(
 )
 
 # --- Route Registration ---
-# All API routes are prefixed with /api/v1 for versioning.
-# This allows future /api/v2 without breaking existing clients.
 app.include_router(health_router, prefix="/api/v1", tags=["Health"])
+app.include_router(ingestion_router, prefix="/api/v1", tags=["Data Ingestion & Quality Audit"])
 
 
 # --- Root Redirect ---
@@ -52,4 +49,6 @@ async def root():
         "message": f"Welcome to {settings.APP_NAME} API",
         "docs": "/docs",
         "health": "/api/v1/health",
+        "ingestion_summary": "/api/v1/ingestion/mandi/summary",
+        "quality_report": "/api/v1/ingestion/quality-report"
     }
