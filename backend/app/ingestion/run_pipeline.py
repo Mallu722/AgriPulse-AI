@@ -22,7 +22,9 @@ from app.ingestion.agmarknet_adapter import AgmarknetMandiAdapter
 
 def run_day2_pipeline():
     project_root = backend_root.parent
-    raw_path = project_root / "data" / "raw" / "karnataka_mandi_prices_2026.csv"
+    comp_path = project_root / "data" / "raw" / "karnataka_mandi_prices_comprehensive.csv"
+    default_path = project_root / "data" / "raw" / "karnataka_mandi_prices_2026.csv"
+    raw_path = comp_path if comp_path.exists() else default_path
     processed_path = project_root / "data" / "processed" / "canonical_mandi_prices.csv"
     report_path = project_root / "data" / "processed" / "data_quality_report.json"
 

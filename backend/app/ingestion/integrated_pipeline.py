@@ -33,7 +33,8 @@ def run_integrated_pipeline() -> Dict[str, Any]:
     project_root = backend_root.parent
     data_dir = project_root / "data"
 
-    raw_mandi_path = data_dir / "raw" / "karnataka_mandi_prices_2026.csv"
+    comp_mandi = data_dir / "raw" / "karnataka_mandi_prices_comprehensive.csv"
+    raw_mandi_path = comp_mandi if comp_mandi.exists() else (data_dir / "raw" / "karnataka_mandi_prices_2026.csv")
     raw_apy_path = data_dir / "raw" / "karnataka_crop_apy_history.csv"
     raw_cost_path = data_dir / "raw" / "karnataka_cost_of_cultivation.csv"
     raw_icar_path = data_dir / "raw" / "icar_crop_guidelines.json"
