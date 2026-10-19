@@ -1,8 +1,11 @@
 """
-AgriPulse AI — Agmarknet & Karnataka OGD Mandi Price Adapter.
+AgriPulse AI — Agmarknet, e-NAM & National OGD Mandi Price Adapter.
 
 Provides ingestion, column mapping, normalization, and canonical record extraction
-for APMC market price feeds (both CSV files and Data.gov.in REST endpoints).
+for APMC market price feeds:
+1. National OGD Daily Mandi Prices (Resource: 6141ea17-a69d-4713-b600-0a43c8fd9a6c)
+2. e-NAM AGMARKNET Price Dashboard Export (https://www.enam.gov.in/web/dashboard/agmarknet)
+3. Karnataka State OGD Mandi Catalog CSVs
 """
 
 import hashlib
@@ -10,6 +13,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import httpx
 import pandas as pd
 
 from app.ingestion.base import BaseIngestionAdapter
@@ -20,9 +24,12 @@ from app.schemas.quality_report import DataQualityReport
 
 class AgmarknetMandiAdapter(BaseIngestionAdapter):
     """
-    Adapter for Karnataka Open Government Data (OGD) and Agmarknet APMC datasets.
-    Supports official CSV ingestion and Data.gov.in API integration.
+    Adapter for Karnataka & National Open Government Data (OGD) and e-NAM/Agmarknet APMC datasets.
+    Supports official CSV ingestion, National OGD API pagination, and variety-wise datasets.
     """
+
+    # National OGD Agmarknet resource ID
+    NATIONAL_OGD_RESOURCE_ID = "6141ea17-a69d-4713-b600-0a43c8fd9a6c"
 
     # Flexible column mappings supporting common Agmarknet variations
     COLUMN_ALIASES: Dict[str, List[str]] = {
@@ -41,8 +48,8 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
 
     def __init__(
         self,
-        source_id: str = "karnataka_ogd_agmarknet",
-        source_url: str = "https://karnataka.data.gov.in/catalog/current-daily-price-various-commodities-various-markets-mandi"
+        source_id: str = "national_ogd_enam_agmarknet",
+        source_url: str = "https://www.data.gov.in/catalog/current-daily-price-various-commodities-various-markets-mandi"
     ):
         super().__init__(source_id, source_url)
 
@@ -52,9 +59,55 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
         Preserves raw input immutability.
         """
         if csv_path and Path(csv_path).exists():
-            # Read CSV verbatim
             return pd.read_csv(csv_path, dtype=str)
         raise FileNotFoundError(f"Raw source CSV not found at: {csv_path}")
+
+    def fetch_national_ogd_api(
+        self,
+        api_key: str,
+        resource_id: Optional[str] = None,
+        state: str = "Karnataka",
+        max_records: int = 5000,
+        page_size: int = 1000,
+    ) -> pd.DataFrame:
+        """
+        Fetches live mandi records from National OGD API (Data.gov.in) with automatic pagination.
+        Handles both general and variety-wise resources.
+        """
+        res_id = resource_id or self.NATIONAL_OGD_RESOURCE_ID
+        base_url = f"https://api.data.gov.in/resource/{res_id}"
+        all_records: List[Dict[str, Any]] = []
+        offset = 0
+
+        while offset < max_records:
+            params = {
+                "api-key": api_key,
+                "format": "json",
+                "offset": offset,
+                "limit": page_size,
+                "filters[state]": state,
+            }
+            try:
+                with httpx.Client(timeout=12.0) as client:
+                    resp = client.get(base_url, params=params)
+                    if resp.status_code == 200:
+                        payload = resp.json()
+                        records = payload.get("records", [])
+                        if not records:
+                            break
+                        all_records.extend(records)
+                        total = payload.get("total", len(all_records))
+                        offset += len(records)
+                        if offset >= total:
+                            break
+                    else:
+                        break
+            except Exception:
+                break
+
+        if all_records:
+            return pd.DataFrame(all_records)
+        return pd.DataFrame()
 
     def parse_to_dataframe(self, raw_data: Any) -> pd.DataFrame:
         if isinstance(raw_data, pd.DataFrame):
@@ -128,7 +181,6 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
                 if pd.isna(val):
                     return default
                 try:
-                    # Strip commas or currency symbols if present
                     clean_str = str(val).replace(",", "").replace("₹", "").replace("Rs.", "").strip()
                     return float(clean_str)
                 except (ValueError, TypeError):
@@ -180,7 +232,7 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
         report_json_path: str
     ) -> Tuple[pd.DataFrame, DataQualityReport]:
         """
-        Complete Day 2 pipeline execution:
+        Complete pipeline execution:
         1. Reads raw CSV (immutable)
         2. Normalizes into canonical price DataFrame
         3. Runs statistical quality audit and outlier detection
@@ -190,12 +242,11 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
         df_canonical = self.clean_and_normalize(df_raw)
 
         # Run quality audit
-        auditor = DataQualityAuditor(dataset_name="Karnataka_APMC_Agmarknet", raw_source_path=raw_csv_path)
+        auditor = DataQualityAuditor(dataset_name="National_OGD_eNAM_Agmarknet", raw_source_path=raw_csv_path)
         df_audited, report = auditor.audit_dataset(df_raw, df_canonical)
 
         # Save processed files
         Path(processed_csv_path).parent.mkdir(parents=True, exist_ok=True)
-        # Convert quality_flags and extra_attributes to string representation for CSV export
         df_export = df_audited.copy()
         df_export["quality_flags"] = df_export["quality_flags"].apply(lambda x: ";".join(x) if isinstance(x, list) else "")
         df_export["extra_attributes"] = df_export["extra_attributes"].apply(lambda x: json.dumps(x) if isinstance(x, dict) else "")
