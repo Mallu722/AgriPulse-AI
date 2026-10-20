@@ -13,6 +13,7 @@ This document details the external data dependencies, access requirements, updat
 | **Cost of Cultivation** | **DESAgri & State Agricultural Universities** | Official PDF / Tabular Reports | None (Public government reports) | Annual / Biennial revision | Batch / Local Cache (< 100ms) | Baseline estimates editable by farmer |
 | **Weather & Climate** | **IMD API / Open-Meteo** | REST JSON (Geo-coordinates) | Open-Meteo: No key (free tier)<br>IMD: API token | Hourly / 6-hour forecast updates | 250ms – 600ms | Open-Meteo fallback if IMD endpoint encounters downtime |
 | **Agronomic Practices & RAG** | **ICAR / UAS Bengaluru & UAS Dharwad** | Curated Package-of-Practices | None (Verified static publications) | Seasonal | < 150ms (Local pgvector retrieval) | Hardcoded ICAR rule table for vital safety limits (e.g. fertilizer dose) |
+| **Soil Maps & LRI Layers** | **BHOOMI Geoportal (ICAR-NBSS&LUP)** | WMS/WFS Map Service & Portal Exploration | Web Interface / Spatial Geoportal | Static baseline / 1:50K & 1:10K surveys | On-demand / Spatial query | Farmer Soil Health Card manual input if district LRI unavailable |
 | **LLM Reasoning** | **Google Gemini (2.5 Flash / Pro)** | Google GenAI SDK (REST / gRPC) | `GEMINI_API_KEY` | Real-time advisory synthesis | 800ms – 2,200ms | Rule-based deterministic advisory generator |
 | **Vernacular Speech (STT/TTS)** | **Whisper / Cloud TTS** | Audio stream / WAV upload | API Key / Local Model | On-demand voice interaction | 400ms – 1,800ms | Fallback to text interface |
 
@@ -97,9 +98,18 @@ A single dataset cannot properly support crop suitability, yield prediction, soi
 2. **Supporting 2: Area, Production & Yield (DESAgri)**: District-level historical agricultural statistics (2021-2025). Used to provide regional context for crop suitability and realistic yield baselines. *Aggregated data, not farm-level.*
 3. **Supporting 3: Weather & Rainfall (IMD & Open-Meteo)**: Real-time precipitation, temperature, and humidity. Used for weather-aware crop suitability and short-term operational risk warnings.
 4. **Supporting 4: Cost of Cultivation (DESAgri & State Universities)**: Operational cost breakdowns (seed, fertilizer, labor, irrigation, machinery, transport). Serves as an editable baseline for farmer net-return calculators.
-5. **Supporting 5 & RAG Knowledge: Soil Health Cards & ICAR Guidelines**:
-   - Soil parameters (pH, EC, NPK, Organic Carbon) are input directly by the farmer; never guessed or inferred from GPS.
-   - ICAR and UAS Bengaluru Package of Practices provide ground-truth agronomic constraints and citation provenance.
+5. **Supporting 5 & RAG Knowledge: Soil Health Cards & ICAR-NBSS&LUP BHOOMI Geoportal**:
+   - **BHOOMI Geoportal (`https://bhoomigeoportal-nbsslup.in/BHOOMI_StateWise/`)**: Developed by ICAR - National Bureau of Soil Survey and Land Use Planning (NBSS&LUP).
+   - **Key Available Layers**:
+     - *Soil Taxonomy & Classification*: 1:50,000 scale Soil Resources and 1:10,000 Land Resource Inventory (LRI) block maps for Karnataka.
+     - *Physical Soil Properties*: Soil texture (sand, silt, clay fractions), soil depth (cm).
+     - *Chemical & Fertility*: Soil pH/reaction, Electrical Conductivity (salinity), Soil Organic Carbon (SOC %).
+     - *Hydraulic Properties*: Available Water Capacity (AWC in mm/m) and drainage class.
+   - **Architectural Policy on Geoportal vs. Direct Farm Input**:
+     - Viewing map layers on a WebGIS geoportal is fundamentally different from automated bulk API extraction.
+     - While BHOOMI provides 1:50K/1:10K survey layers across participating Karnataka taluks, coverage is block-specific and not uniformly available as an automated open REST API for all 31 districts.
+     - Therefore, AgriPulse AI accepts verified **BHOOMI Geoportal LRI Block attributes** or physical Soil Health Card lab inputs without hallucinating or imputing properties from raw GPS.
+   - **ICAR / UAS Bengaluru Package of Practices**: Provides ground-truth agronomic constraints and citation provenance.
 
 ### 4.2 Cross-Dataset Alignment Rules
 - **Safe Semantic Keys**: Datasets are joined on common categorical keys: `(crop, district, season)`.

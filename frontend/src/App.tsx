@@ -8,7 +8,6 @@ import {
   Server,
   Database,
   CloudSun,
-  TrendingUp,
   Cpu,
   Mic,
   ShieldCheck,
@@ -18,6 +17,8 @@ import {
   FileText,
   Sparkles
 } from 'lucide-react';
+import { CropSuitabilityEngine } from './components/CropSuitabilityEngine';
+import { EconomicsProfitScenarios } from './components/EconomicsProfitScenarios';
 
 interface HealthResponse {
   status: string;
@@ -56,7 +57,7 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
-  const [activeTab, setActiveTab] = useState<'health' | 'mandi'>('mandi');
+  const [activeTab, setActiveTab] = useState<'economics' | 'suitability' | 'mandi' | 'health'>('economics');
 
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
 
@@ -107,10 +108,10 @@ export const App: React.FC = () => {
           <div className="brand-text">
             <h1>
               AgriPulse AI
-              <span className="badge-tag">Day 2: Mandi Ingestion</span>
+              <span className="badge-tag">Day 4: Profit Scenarios</span>
             </h1>
             <p className="brand-subtitle">
-              Official Agmarknet Mandi Pipeline & Data Quality Auditor
+              Evidence-Based Economics, Quantile Scenarios & Chronological Price Backtesting
             </p>
           </div>
         </div>
@@ -146,15 +147,14 @@ export const App: React.FC = () => {
       {/* Hero / System Overview Banner */}
       <section className="hero-card">
         <div className="hero-tag">
-          <Sparkles size={15} /> Day 2 Milestone: Official Mandi Data Pipeline & Audit Active
+          <Sparkles size={15} /> Day 4 Milestone: Tested Economics & Chronological Backtesting Active
         </div>
         <h2 className="hero-title">
-          Traceable, Audited Market Data for Precision Agriculture
+          Transparent, Mathematically Audited Farm Profit Scenarios
         </h2>
         <p className="hero-description">
-          Raw Agmarknet APMC spot prices are ingested from immutable source stores,
-          cryptographically hashed with SHA-256 for audit provenance, and checked for
-          outliers and logical anomalies without silent data loss.
+          Expected returns are computed from verified unit formulas (Yield × Area × Price − Costs) rather than generative LLM guessing.
+          Combines official DESAgri cultivation costs with chronological out-of-time price backtesting and empirical P25/Median/P75 quantiles.
         </p>
 
         <div className="hero-meta-grid">
@@ -191,27 +191,41 @@ export const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Day 2 Ingestion Highlights Card */}
+      {/* Main Feature Tabs */}
       <section className="section-card">
         <div className="card-header">
           <h3 className="card-title">
-            <TrendingUp className="card-icon" size={20} />
-            Day 2 Mandi Ingestion & Statistical Quality Audit
+            <Sprout className="card-icon" size={20} />
+            AgriPulse Intelligence Modules
           </h3>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('economics')}
+              className={`component-badge ${activeTab === 'economics' ? 'ready' : 'pending'}`}
+              style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}
+            >
+              💰 Day 4: Profit Scenarios
+            </button>
+            <button
+              onClick={() => setActiveTab('suitability')}
+              className={`component-badge ${activeTab === 'suitability' ? 'ready' : 'pending'}`}
+              style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}
+            >
+              🌱 Day 3: Crop Suitability
+            </button>
             <button
               onClick={() => setActiveTab('mandi')}
               className={`component-badge ${activeTab === 'mandi' ? 'ready' : 'pending'}`}
-              style={{ cursor: 'pointer', padding: '0.4rem 0.8rem' }}
+              style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}
             >
-              Mandi Dataset Summary
+              📊 Day 2: Mandi Market Data
             </button>
             <button
               onClick={() => setActiveTab('health')}
               className={`component-badge ${activeTab === 'health' ? 'ready' : 'pending'}`}
-              style={{ cursor: 'pointer', padding: '0.4rem 0.8rem' }}
+              style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}
             >
-              System Health JSON
+              ⚡ System Health
             </button>
           </div>
         </div>
@@ -236,6 +250,14 @@ export const App: React.FC = () => {
             </div>
           </div>
         ) : null}
+
+        {activeTab === 'economics' && (
+          <EconomicsProfitScenarios apiBase={apiBase} />
+        )}
+
+        {activeTab === 'suitability' && (
+          <CropSuitabilityEngine apiBase={apiBase} />
+        )}
 
         {activeTab === 'mandi' ? (
           <div>

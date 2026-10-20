@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.health import router as health_router
 from app.api.ingestion import router as ingestion_router
+from app.api.suitability import router as suitability_router
+from app.api.economics import router as economics_router
 
 # --- Application Factory ---
 app = FastAPI(
@@ -39,6 +41,8 @@ app.add_middleware(
 # --- Route Registration ---
 app.include_router(health_router, prefix="/api/v1", tags=["Health"])
 app.include_router(ingestion_router, prefix="/api/v1", tags=["Data Ingestion & Quality Audit"])
+app.include_router(suitability_router, prefix="/api/v1", tags=["Agronomy & Crop Suitability"])
+app.include_router(economics_router, prefix="/api/v1", tags=["Economics & Profit Scenarios"])
 
 
 # --- Root Redirect ---
