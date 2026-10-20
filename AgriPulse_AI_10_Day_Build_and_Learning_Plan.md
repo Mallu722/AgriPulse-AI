@@ -276,11 +276,11 @@ Stop after Day 3.
 - UAS Bengaluru: https://www.uasbangalore.edu.in/
 
 ### Completion checklist
-- [ ] Profile validation handles units and missing values.
-- [ ] Every configured crop rule has a source.
-- [ ] System can return “insufficient information”.
-- [ ] Crop explanations name the factors considered.
-- [ ] Test cases cover suitable, unsuitable and unknown conditions.
+- [x] Profile validation handles units and missing values.
+- [x] Every configured crop rule has a source.
+- [x] System can return “insufficient information”.
+- [x] Crop explanations name the factors considered.
+- [x] Test cases cover suitable, unsuitable and unknown conditions.
 
 ### Explain in an interview
 “I chose an explainable rule engine for the initial crop suitability filter because reliable labelled farm-level training data may not exist. ML is used only where it can be validated.”
@@ -321,11 +321,11 @@ Stop after Day 4.
 - Model evaluation: https://scikit-learn.org/stable/modules/model_evaluation.html
 
 ### Completion checklist
-- [ ] Profit formula and units are tested.
-- [ ] Cost source year is displayed, with user override.
-- [ ] Forecast uses chronological evaluation and a simple baseline.
-- [ ] No measured model improvement is claimed without results.
-- [ ] Low/base/high scenarios explain assumptions and uncertainty.
+- [x] Profit formula and units are tested.
+- [x] Cost source year is displayed, with user override.
+- [x] Forecast uses chronological evaluation and a simple baseline.
+- [x] No measured model improvement is claimed without results.
+- [x] Low/base/high scenarios explain assumptions and uncertainty.
 
 ### Explain in an interview
 “The expected return is not an LLM-generated number. The backend calculates it from explicit yield, price, area and cost assumptions, while forecasts are shown only after time-based evaluation.”
