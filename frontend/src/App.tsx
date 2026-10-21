@@ -8,6 +8,7 @@ import FarmerAccount from './components/FarmerAccount';
 import CropRecommendations from './components/CropRecommendations';
 import MarketExplorer from './components/MarketExplorer';
 import ProfitCalculator from './components/ProfitCalculator';
+import AiAssistant from './components/AiAssistant';
 
 const AppContent: React.FC = () => {
   const { t } = useApp();
@@ -25,6 +26,7 @@ const AppContent: React.FC = () => {
           <Route path="/recommendations" element={<CropRecommendations />} />
           <Route path="/market" element={<MarketExplorer />} />
           <Route path="/profit" element={<ProfitCalculator />} />
+          <Route path="/assistant" element={<AiAssistant />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

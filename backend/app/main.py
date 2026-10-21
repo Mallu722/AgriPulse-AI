@@ -18,6 +18,7 @@ from app.api.suitability import router as suitability_router
 from app.api.economics import router as economics_router
 from app.api.weather import router as weather_router
 from app.api.ranking import router as ranking_router
+from app.api.assistant import router as assistant_router
 
 # --- Application Factory ---
 app = FastAPI(
@@ -47,6 +48,7 @@ app.include_router(suitability_router, prefix="/api/v1", tags=["Agronomy & Crop 
 app.include_router(economics_router, prefix="/api/v1", tags=["Economics & Profit Scenarios"])
 app.include_router(weather_router, prefix="/api/v1", tags=["Meteorology & Weather Intelligence"])
 app.include_router(ranking_router, prefix="/api/v1", tags=["Transparent Crop Ranking & Recommendations"])
+app.include_router(assistant_router, prefix="/api/v1", tags=["RAG Assistant & Agricultural Guidance"])
 
 
 # --- Root Redirect ---

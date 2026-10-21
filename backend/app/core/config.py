@@ -54,8 +54,12 @@ class Settings(BaseSettings):
     )
 
     LLM_API_KEY: Optional[str] = Field(default=None, description="LLM provider API key.")
-    LLM_MODEL: Optional[str] = Field(default=None, description="LLM model identifier.")
-    LLM_PROVIDER: Optional[str] = Field(default=None, description="LLM provider name.")
+    LLM_MODEL: Optional[str] = Field(default="llama3", description="LLM model identifier.")
+    LLM_PROVIDER: Optional[str] = Field(default="ollama", description="LLM provider name.")
+    LLM_BASE_URL: str = Field(
+        default="http://localhost:11434/v1",
+        description="Base URL for LLM API (e.g. Ollama or OpenAI-compatible endpoint)."
+    )
 
     TTS_PROVIDER: Optional[str] = Field(default="google", description="TTS provider: google or bhashini.")
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(

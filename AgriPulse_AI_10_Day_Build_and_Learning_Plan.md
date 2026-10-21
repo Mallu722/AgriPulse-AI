@@ -451,11 +451,11 @@ Stop after Day 7.
 - FastAPI: https://fastapi.tiangolo.com/tutorial/
 
 ### Completion checklist
-- [ ] Each factual agronomy answer provides supporting source references.
-- [ ] Numerical claims come from APIs/calculations or explicitly labelled assumptions.
-- [ ] Unsupported questions receive a clear limitation/abstention.
-- [ ] Curated documents have source/version metadata.
-- [ ] Retrieval-only fallback works without provider keys.
+- [x] Each factual agronomy answer provides supporting source references.
+- [x] Numerical claims come from APIs/calculations or explicitly labelled assumptions.
+- [x] Unsupported questions receive a clear limitation/abstention.
+- [x] Curated documents have source/version metadata.
+- [x] Retrieval-only fallback works without provider keys.
 
 ### Explain in an interview
 “RAG supplies verifiable evidence; structured tools supply current numerical facts. This separation reduces hallucinations but still requires citation and answer evaluation.”
@@ -801,3 +801,5 @@ agripulse-ai/
 ## Final rule
 
 Do not move on just because the coding assistant says “done.” Move on when you can run the feature, inspect the code, verify tests, describe the key decisions and identify its limitations. A small, evidence-backed application is a stronger portfolio project than a large demo filled with unsupported predictions.
+
+
