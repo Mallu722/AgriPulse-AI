@@ -18,7 +18,10 @@ from app.rag.tools import GroundedToolRegistry
 from app.core.config import settings
 
 # Supported crops for keyword recognition
-KNOWN_CROPS = ["Tomato", "Onion", "Potato", "Maize", "Ragi", "Cotton", "Tur", "Chilli"]
+KNOWN_CROPS = [
+    "Tomato", "Onion", "Potato", "Maize", "Ragi", "Cotton", "Tur", "Chilli",
+    "Groundnut", "Paddy", "Arecanut"
+]
 KANNADA_CROP_MAP = {
     "ಟೊಮೆಟೊ": "Tomato",
     "ಟೊಮೇಟೊ": "Tomato",
@@ -28,13 +31,64 @@ KANNADA_CROP_MAP = {
     "ರಾಗಿ": "Ragi",
     "ಹತ್ತಿ": "Cotton",
     "ತೊಗರಿ": "Tur",
-    "ಮೆಣಸಿನಕಾಯಿ": "Chilli"
+    "ಮೆಣಸಿನಕಾಯಿ": "Chilli",
+    "ಕಡಲೆಕಾಯಿ": "Groundnut",
+    "ಶೇಂಗಾ": "Groundnut",
+    "ಭತ್ತ": "Paddy",
+    "ಅಕ್ಕಿ": "Paddy",
+    "ಅಡಿಕೆ": "Arecanut",
+    "ಅಡಕೆ": "Arecanut",
+}
+
+KANNADA_DISTRICT_MAP = {
+    "ಕೋಲಾರ": "Kolar",
+    "ಬೆಂಗಳೂರು": "Bengaluru Urban",
+    "ಬೆಂಗಳೂರು ನಗರ": "Bengaluru Urban",
+    "ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ": "Bengaluru Rural",
+    "ಬೆಳಗಾವಿ": "Belagavi",
+    "ಮೈಸೂರು": "Mysuru",
+    "ದಾವಣಗೆರೆ": "Davanagere",
+    "ಹಾವೇರಿ": "Haveri",
+    "ಚಿತ್ರದುರ್ಗ": "Chitradurga",
+    "ತುಮಕೂರು": "Tumakuru",
+    "ಮಂಡ್ಯ": "Mandya",
+    "ಹಾಸನ": "Hassan",
+    "ಚಿಕ್ಕಬಳ್ಳಾಪುರ": "Chikkaballapura",
+    "ಬಳ್ಳಾರಿ": "Ballari",
+    "ರಾಯಚೂರು": "Raichur",
+    "ಕಲಬುರಗಿ": "Kalaburagi",
+    "ಗುಲ್ಬರ್ಗ": "Kalaburagi",
+    "ಬೀದರ್": "Bidar",
+    "ಯಾದಗಿರಿ": "Yadgir",
+    "ಶಿವಮೊಗ್ಗ": "Shivamogga",
+    "ಧಾರವಾಡ": "Dharwad",
+    "ಹುಬ್ಬಳ್ಳಿ": "Hubballi",
+    "ಗದಗ": "Gadag",
+    "ಕೊಪ್ಪಳ": "Koppal",
+    "ವಿಜಯಪುರ": "Vijayapura",
+    "ಬಾಗಲಕೋಟೆ": "Bagalkot",
+    "ರಾಮನಗರ": "Ramanagara",
+    "ಚಿಕ್ಕಮಗಳೂರು": "Chikkamagaluru",
+    "ಉಡುಪಿ": "Udupi",
+    "ಕೊಡಗು": "Kodagu"
 }
 
 
 def is_kannada(text: str) -> bool:
     """Checks if text contains Kannada Unicode characters."""
     return any("\u0c80" <= c <= "\u0cff" for c in text)
+
+
+def extract_district(query: str, default_district: Optional[str] = None) -> Optional[str]:
+    """Extracts Karnataka district name from query text if present."""
+    for kn_dist, en_dist in KANNADA_DISTRICT_MAP.items():
+        if kn_dist in query:
+            return en_dist
+    q_lower = query.lower()
+    for en_dist in KANNADA_DISTRICT_MAP.values():
+        if en_dist.lower() in q_lower:
+            return en_dist
+    return default_district
 
 
 def extract_crop_name(query: str, default_crop: Optional[str] = None) -> Optional[str]:
@@ -62,10 +116,10 @@ def classify_intent(query: str) -> str:
     if any(k in q for k in out_of_scope_keywords):
         return "OUT_OF_SCOPE"
 
-    has_price_kw = any(w in q for w in ["price", "rate", "mandi", "apmc", "modal", "ಬೆಲೆ", "ದರ", "ಮಾರುಕಟ್ಟೆ", "ಕ್ವಿಂಟಾಲ್"])
-    has_profit_kw = any(w in q for w in ["profit", "cost", "revenue", "return", "roi", "economics", "ಖರ್ಚು", "ಲಾಭ", "ಆದಾಯ", "ಬಂಡವಾಳ"])
+    has_price_kw = any(w in q for w in ["price", "rate", "mandi", "apmc", "modal", "ಬೆಲೆ", "ದರ", "ಮಾರುಕಟ್ಟೆ", "ಕ್ವಿಂಟಾಲ್", "ಖರೀದಿ"])
+    has_profit_kw = any(w in q for w in ["profit", "cost", "revenue", "return", "roi", "economics", "ಖರ್ಚು", "ಲಾಭ", "ಆದಾಯ", "ಬಂಡವಾಳ", "ವೆಚ್ಚ"])
     has_weather_kw = any(w in q for w in ["weather", "rain", "rainfall", "forecast", "temperature", "humidity", "spray", "ಹವಾಮಾನ", "ಮಳೆ", "ಬಿಸಿಲು", "ಸಿಂಪಡ"])
-    has_agronomy_kw = any(w in q for w in ["fertilizer", "npk", "disease", "pest", "wilt", "blast", "seed", "variety", "spacing", "sow", "ಗೊಬ್ಬರ", "ರೋಗ", "ಔಷಧ", "ತಳಿ", "ಬಿತ್ತನೆ", "ಕೀಟ"])
+    has_agronomy_kw = any(w in q for w in ["fertilizer", "npk", "disease", "pest", "wilt", "blast", "seed", "variety", "spacing", "sow", "ಗೊಬ್ಬರ", "ರೋಗ", "ಔಷಧ", "ತಳಿ", "ಬಿತ್ತನೆ", "ಕೀಟ", "ಶಿಫಾರಸು"])
 
     if has_price_kw and (has_agronomy_kw or has_profit_kw):
         return "HYBRID"
@@ -125,7 +179,26 @@ class AgriPulseAssistant:
         # 3. Classify Intent & Extract Context
         intent = classify_intent(query)
         detected_crop = extract_crop_name(query, request.crop_context)
-        district = request.district or "Kolar"
+        district = extract_district(query, request.district) or "Kolar"
+
+        # Multi-turn conversational context resolution:
+        # If user did not mention crop or district in this turn (e.g. asking "ಇದಕ್ಕೆ ಗೊಬ್ಬರ ಎಷ್ಟು?", "ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?"),
+        # carry forward the crop and district from previous conversation history!
+        if not detected_crop and request.conversation_history:
+            for turn in reversed(request.conversation_history):
+                content = turn.get("content", "")
+                prev_crop = extract_crop_name(content)
+                if prev_crop:
+                    detected_crop = prev_crop
+                    break
+
+        if (not request.district or request.district == "Kolar") and request.conversation_history:
+            for turn in reversed(request.conversation_history):
+                content = turn.get("content", "")
+                prev_dist = extract_district(content, None)
+                if prev_dist:
+                    district = prev_dist
+                    break
 
         # 4. Handle Out of Scope Queries immediately (Explicit Abstention)
         if intent == "OUT_OF_SCOPE":
@@ -201,7 +274,7 @@ class AgriPulseAssistant:
                 prompt_injection_flagged=False
             )
 
-        # 7. Synthesize Response
+        # 7. Synthesize Response with Conversational Multi-turn Context
         answer_text, mode = await self._synthesize_grounded_response(
             query=query,
             lang=lang,
@@ -209,7 +282,8 @@ class AgriPulseAssistant:
             detected_crop=detected_crop,
             district=district,
             citations=citations,
-            tool_outputs=tool_outputs
+            tool_outputs=tool_outputs,
+            conversation_history=request.conversation_history
         )
 
         assumptions = (
@@ -241,11 +315,12 @@ class AgriPulseAssistant:
         detected_crop: Optional[str],
         district: str,
         citations: List[Citation],
-        tool_outputs: Dict[str, Any]
+        tool_outputs: Dict[str, Any],
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> tuple[str, str]:
         """
         Synthesizes the final answer text using configured LLM when available,
-        with strict deterministic fallback to authenticated excerpts.
+        with strict deterministic fallback to authenticated excerpts and multi-turn context.
         """
         # If LLM API key is present, attempt grounded LLM synthesis
         if settings.LLM_API_KEY:
@@ -256,7 +331,8 @@ class AgriPulseAssistant:
                     intent=intent,
                     district=district,
                     citations=citations,
-                    tool_outputs=tool_outputs
+                    tool_outputs=tool_outputs,
+                    conversation_history=conversation_history
                 )
                 if llm_response and len(llm_response.strip()) > 20:
                     return llm_response.strip(), "llm_synthesized"
@@ -266,6 +342,13 @@ class AgriPulseAssistant:
 
         mode = "retrieval_excerpt_fallback"
         sections: List[str] = []
+
+        # Multi-turn contextual continuity note
+        if conversation_history and len(conversation_history) > 0:
+            if lang == "kn":
+                sections.append(f"💬 **ಹಿಂದಿನ ಸಂಭಾಷಣೆಗೆ ಸಂಬಂಧಿಸಿದ ಮಾಹಿತಿ ({detected_crop or 'ಬೆಳೆ'} • {district} ಜಿಲ್ಲೆ):**")
+            else:
+                sections.append(f"💬 **In connection with our previous discussion ({detected_crop or 'crop'} • {district} District):**")
 
         # Numerical tool outputs section
         if "market_quote" in tool_outputs:
@@ -354,9 +437,10 @@ class AgriPulseAssistant:
         intent: str,
         district: str,
         citations: List[Citation],
-        tool_outputs: Dict[str, Any]
+        tool_outputs: Dict[str, Any],
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> Optional[str]:
-        """Calls the configured LLM endpoint with grounded tool facts and document context."""
+        """Calls the configured LLM endpoint with grounded tool facts, multi-turn history, and document context."""
         import httpx
 
         system_prompt = (
@@ -365,7 +449,8 @@ class AgriPulseAssistant:
             "1. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE KANNADA.\n"
             "2. Never hallucinate or invent prices, yields, or profits. Use ONLY the provided tool numbers and ICAR facts.\n"
             "3. Ground your agronomic recommendations strictly on the provided official excerpts and citations.\n"
-            "4. Structure your response clearly with helpful bullet points."
+            "4. Structure your response clearly with helpful bullet points.\n"
+            "5. If previous conversation turns are present, maintain multi-turn continuity and directly connect your answer to the previous questions and answers."
         )
 
         context_parts = []
@@ -382,16 +467,27 @@ class AgriPulseAssistant:
             + "\n\n".join(context_parts)
         )
 
+        messages = [
+            {"role": "system", "content": system_prompt}
+        ]
+
+        # Add prior conversation turns for multi-turn conversational awareness
+        if conversation_history:
+            for turn in conversation_history[-6:]:
+                role = turn.get("role")
+                content = turn.get("content")
+                if role in ["user", "assistant"] and content:
+                    messages.append({"role": role, "content": content})
+
+        messages.append({"role": "user", "content": user_content})
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {settings.LLM_API_KEY}"
         }
         payload = {
             "model": settings.LLM_MODEL or "llama3",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content}
-            ],
+            "messages": messages,
             "temperature": 0.2,
             "max_tokens": 800
         }

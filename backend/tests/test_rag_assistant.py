@@ -205,3 +205,29 @@ def test_api_assistant_endpoints():
     assert len(eval_cases) >= 6
     assert any(c["category"] == "prompt_injection" for c in eval_cases)
     assert any(c["category"] == "unanswerable_out_of_scope" for c in eval_cases)
+
+
+@pytest.mark.asyncio
+async def test_assistant_multiturn_conversational_context():
+    """Verify that follow-up questions resolve crop and district context from conversation history."""
+    assistant = AgriPulseAssistant()
+    from app.schemas.assistant import AssistantRequest
+
+    # Turn 1: Farmer asks about Tomato price in Kolar
+    # Turn 2: Farmer asks "ಇದಕ್ಕೆ ಎಷ್ಟು ಗೊಬ್ಬರ ಹಾಕಬೇಕು?" without mentioning "ಟೊಮೆಟೊ"
+    req_turn_2 = AssistantRequest(
+        query="ಇದಕ್ಕೆ ಎಷ್ಟು ಗೊಬ್ಬರ ಹಾಕಬೇಕು?",
+        language_preference="kn",
+        conversation_history=[
+            {"role": "user", "content": "ಕೋಲಾರದಲ್ಲಿ ಟೊಮೆಟೊ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?"},
+            {"role": "assistant", "content": "ಕೋಲಾರ ಮಂಡಿಯಲ್ಲಿ ಟೊಮೆಟೊ ಮಾದರಿ ದರ ₹2,450 / ಕ್ವಿಂಟಾಲ್ ಆಗಿದೆ."}
+        ]
+    )
+    resp = await assistant.answer(req_turn_2)
+    assert resp.abstention is False
+    assert resp.detected_language == "kn"
+    assert len(resp.citations) > 0
+    # Must retrieve tomato cultivation guidelines using carried-over crop context
+    assert any("Tomato" in c.document_title or "ಟೊಮೆಟೊ" in c.document_title or "IIHR" in c.issuer for c in resp.citations)
+    assert "ಹಿಂದಿನ ಸಂಭಾಷಣೆ" in resp.answer or "ಟೊಮೆಟೊ" in resp.answer or "ಗೊಬ್ಬರ" in resp.answer
+

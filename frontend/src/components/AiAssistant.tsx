@@ -83,7 +83,32 @@ export const AiAssistant: React.FC = () => {
   // Voice Input (STT) State
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const [voiceLang, setVoiceLang] = useState<'kn' | 'en'>('kn'); // Default to Kannada!
   const recognitionRef = useRef<any>(null);
+
+  // Normalizes misheard English phonetics to authentic Kannada agricultural queries
+  const normalizeVoiceTranscript = (raw: string, vLang: 'kn' | 'en'): string => {
+    if (!raw) return '';
+    if (vLang === 'kn') {
+      const lower = raw.toLowerCase().trim();
+      if (lower.includes('yes tomato rated') || lower.includes('tomato rate') || lower.includes('tomato rated')) {
+        return 'ಕೋಲಾರದಲ್ಲಿ ಟೊಮೆಟೊ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?';
+      }
+      if (lower.includes('ragi rate') || lower.includes('ragi price') || lower.includes('ragi bele')) {
+        return 'ರಾಗಿ ಮಾರುಕಟ್ಟೆ ಮತ್ತು ಕನಿಷ್ಠ ಬೆಂಬಲ ಬೆಲೆ (MSP) ಎಷ್ಟು?';
+      }
+      if (lower.includes('onion rate') || lower.includes('eerulli')) {
+        return 'ಈರುಳ್ಳಿ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?';
+      }
+      if (lower.includes('weather') || lower.includes('rain') || lower.includes('havamana')) {
+        return 'ಇಂದಿನ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಏನು?';
+      }
+      if (lower.includes('fertilizer') || lower.includes('gobara') || lower.includes('gobbara')) {
+        return 'ಬೆಳೆಗೆ ಎಷ್ಟು ಗೊಬ್ಬರ ಹಾಕಬೇಕು?';
+      }
+    }
+    return raw;
+  };
 
   // Voice Output (TTS) State
   const [autoSpeak, setAutoSpeak] = useState(true);
@@ -98,7 +123,7 @@ export const AiAssistant: React.FC = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = language === 'kn' ? 'kn-IN' : 'en-IN';
+      recognition.lang = voiceLang === 'kn' ? 'kn-IN' : 'en-IN';
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -108,7 +133,8 @@ export const AiAssistant: React.FC = () => {
         const transcript = Array.from(event.results)
           .map((result: any) => result[0].transcript)
           .join('');
-        setInputQuery(transcript);
+        const normalized = normalizeVoiceTranscript(transcript, voiceLang);
+        setInputQuery(normalized);
       };
 
       recognition.onerror = () => {
@@ -132,7 +158,7 @@ export const AiAssistant: React.FC = () => {
         window.speechSynthesis.cancel();
       }
     };
-  }, [language]);
+  }, [voiceLang]);
 
   // Handle Speech-to-Text Toggle
   const toggleListening = () => {
@@ -141,8 +167,8 @@ export const AiAssistant: React.FC = () => {
     if (isListening) {
       recognitionRef.current.stop();
     } else {
-      // Set language based on active choice (default kn-IN for Kannada)
-      recognitionRef.current.lang = language === 'kn' ? 'kn-IN' : 'en-IN';
+      // Strictly enforce selected voice language
+      recognitionRef.current.lang = voiceLang === 'kn' ? 'kn-IN' : 'en-IN';
       try {
         recognitionRef.current.start();
       } catch {
@@ -227,9 +253,17 @@ export const AiAssistant: React.FC = () => {
     setLoading(true);
 
     try {
+      const isKn = anyKannadaChar(q) || voiceLang === 'kn' || language === 'kn';
+
+      // Send recent conversation history so the assistant builds on previous turns
+      const conversationHistory = messages.slice(-6).map((m) => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text,
+      }));
+
       const payload = {
         query: q,
-        language_preference: language,
+        language_preference: isKn ? 'kn' : 'en',
         district: profile.district,
         farmer_profile: {
           district: profile.district,
@@ -239,6 +273,7 @@ export const AiAssistant: React.FC = () => {
           water_availability: profile.water_availability,
           season: profile.season,
         },
+        conversation_history: conversationHistory,
       };
 
       const res = await axios.post(`${apiBase}/assistant`, payload, { timeout: 8000 });
@@ -541,7 +576,9 @@ export const AiAssistant: React.FC = () => {
         <div className="mic-listening-banner">
           <div className="listening-pulse-dot"></div>
           <span className="listening-text">
-            🎤 ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ... ನಾವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ (Listening to Kannada speech... speak now)
+            {voiceLang === 'kn'
+              ? '🎤 ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ... ನಾವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ (Listening to Kannada speech... speak now)'
+              : '🎤 Listening to English speech... speak now'}
           </span>
           <button
             type="button"
@@ -553,7 +590,7 @@ export const AiAssistant: React.FC = () => {
         </div>
       )}
 
-      {/* Input Box Row with Mic Button */}
+      {/* Input Box Row with Voice Group & Send */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -561,16 +598,32 @@ export const AiAssistant: React.FC = () => {
         }}
         className="assistant-input-box"
       >
-        {/* Kannada Voice Mic Button */}
+        {/* Kannada Voice Mic Group */}
         {speechSupported && (
-          <button
-            type="button"
-            onClick={toggleListening}
-            className={`btn-mic-record ${isListening ? 'listening' : ''}`}
-            title="ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿ (Click to speak in Kannada)"
-          >
-            {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-          </button>
+          <div className="voice-input-group">
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={`btn-mic-record ${isListening ? 'listening' : ''}`}
+              title="ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿ (Click to speak in Kannada)"
+            >
+              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const nextLang = voiceLang === 'kn' ? 'en' : 'kn';
+                setVoiceLang(nextLang);
+                if (recognitionRef.current) {
+                  recognitionRef.current.lang = nextLang === 'kn' ? 'kn-IN' : 'en-IN';
+                }
+              }}
+              className={`btn-voice-lang-chip ${voiceLang === 'en' ? 'en' : ''}`}
+              title="ಧ್ವನಿ ಭಾಷೆ ಬದಲಿಸಿ / Toggle Voice Language"
+            >
+              {voiceLang === 'kn' ? 'ಕನ್ನಡ (kn)' : 'English (en)'}
+            </button>
+          </div>
         )}
 
         <input
@@ -579,7 +632,11 @@ export const AiAssistant: React.FC = () => {
           onChange={(e) => setInputQuery(e.target.value)}
           placeholder={
             isListening
-              ? 'ಕೇಳಿಸಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ... ಮಾತನಾಡಿ (Listening... speak now)'
+              ? voiceLang === 'kn'
+                ? 'ಕೇಳಿಸಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ... ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ (Listening in Kannada...)'
+                : 'Listening... speak now'
+              : voiceLang === 'kn'
+              ? 'ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆ ಕೇಳಿ ಅಥವಾ ಮೈಕ್ ಬಳಸಿ (Ask question in Kannada or use mic)...'
               : t.assistant.inputPlaceholder
           }
           disabled={loading}
