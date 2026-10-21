@@ -87,9 +87,10 @@ button {
 }
 
 .page-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: 1.5rem clamp(1rem, 2.5vw, 2.5rem);
 }
 
 /* Navbar */
@@ -186,7 +187,8 @@ button {
 }
 
 .nav-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
 }
 
@@ -1941,7 +1943,8 @@ button {
 }
 
 .footer-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -3037,6 +3040,39 @@ button {
   color: #475569;
   background-color: #f1f5f9;
 }
+
+.voice-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #f0fdf4;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-full);
+  border: 1px solid #bbf7d0;
+}
+
+.btn-voice-lang-chip {
+  background-color: #166534;
+  color: #ffffff;
+  border: none;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-voice-lang-chip:hover {
+  background-color: #14532d;
+  transform: translateY(-1px);
+}
+
+.btn-voice-lang-chip.en {
+  background-color: #d97706;
+}
+
 
 
 

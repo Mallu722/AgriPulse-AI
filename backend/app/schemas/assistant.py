@@ -30,6 +30,10 @@ class AssistantRequest(BaseModel):
     district: Optional[str] = Field(None, description="Target Karnataka district for local context")
     crop_context: Optional[str] = Field(None, description="Optional active crop, e.g., 'Tomato', 'Ragi'")
     farmer_profile: Optional[Dict[str, Any]] = Field(None, description="Optional active farmer profile for numerical calculations")
+    conversation_history: Optional[List[Dict[str, str]]] = Field(
+        default=None,
+        description="Prior conversation history turns [{'role': 'user'|'assistant', 'content': '...'}]"
+    )
 
 
 class AssistantResponse(BaseModel):
