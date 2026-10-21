@@ -364,10 +364,10 @@ Stop after Day 5.
 - Python datetime: https://docs.python.org/3/library/datetime.html
 
 ### Completion checklist
-- [ ] External data is validated and has a source timestamp.
-- [ ] Weather freshness is visible.
-- [ ] Failed provider requests do not break unrelated features.
-- [ ] Suitability rules are not silently overridden by economic rank.
+- [x] External data is validated and has a source timestamp.
+- [x] Weather freshness is visible.
+- [x] Failed provider requests do not break unrelated features.
+- [x] Suitability rules are not silently overridden by economic rank.
 
 ### Explain in an interview
 “The app uses weather for context, not as a guarantee of yield. It separates hard agronomic feasibility from softer economic preference ranking.”
@@ -407,11 +407,11 @@ Stop after Day 6.
 - Recharts: https://recharts.org/en-US/guide/
 
 ### Completion checklist
-- [ ] Farmer profile can be submitted and validated.
-- [ ] Crop candidates display source-backed reasons.
-- [ ] Market prices and comparison use backend results.
-- [ ] All key forms/pages are mobile usable.
-- [ ] Observed prices and forecasts are visually distinguishable.
+- [x] Farmer profile can be submitted and validated.
+- [x] Crop candidates display source-backed reasons.
+- [x] Market prices and comparison use backend results.
+- [x] All key forms/pages are mobile usable.
+- [x] Observed prices and forecasts are visually distinguishable.
 
 ### Explain in an interview
 “I used a guided form to reduce cognitive load, optionalised the advanced soil fields, and separated the API layer from reusable UI components.”
@@ -774,7 +774,7 @@ agripulse-ai/
 - [ ] Day 2: Data ingestion and EDA
 - [ ] Day 3: Farmer profile and crop suitability rules
 - [ ] Day 4: Economics scenarios and forecast baseline evaluation
-- [ ] Day 5: Weather/market freshness and recommendation ranking
+- [x] Day 5: Weather/market freshness and recommendation ranking
 - [ ] Day 6: Responsive frontend integration
 - [ ] Day 7: RAG assistant and citations
 - [ ] Day 8: Kannada TTS and end-to-end MVP freeze

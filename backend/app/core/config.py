@@ -31,11 +31,31 @@ class Settings(BaseSettings):
     )
 
     # --- External Providers (all optional, credentials never in frontend) ---
+    WEATHER_PRIMARY_PROVIDER: str = Field(
+        default="open_meteo",
+        description="Primary weather provider: 'open_meteo' or 'imd'",
+    )
+    WEATHER_FALLBACK_PROVIDER: str = Field(
+        default="open_meteo",
+        description="Fallback weather provider if primary fails or uncredentialed",
+    )
+    WEATHER_CACHE_TTL_SECONDS: int = Field(
+        default=3600,
+        description="Cache validity window for meteorological queries (1 hour default)",
+    )
+    WEATHER_REQUEST_TIMEOUT_SECONDS: float = Field(
+        default=6.0,
+        description="Timeout for external weather HTTP calls in seconds",
+    )
+    IMD_API_KEY: Optional[str] = Field(default=None, description="IMD weather API key.")
+    IMD_API_BASE_URL: str = Field(
+        default="https://api.imd.gov.in/public",
+        description="Base URL for India Meteorological Department official API endpoints",
+    )
+
     LLM_API_KEY: Optional[str] = Field(default=None, description="LLM provider API key.")
     LLM_MODEL: Optional[str] = Field(default=None, description="LLM model identifier.")
     LLM_PROVIDER: Optional[str] = Field(default=None, description="LLM provider name.")
-
-    IMD_API_KEY: Optional[str] = Field(default=None, description="IMD weather API key.")
 
     TTS_PROVIDER: Optional[str] = Field(default="google", description="TTS provider: google or bhashini.")
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(

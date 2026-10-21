@@ -71,6 +71,55 @@ async def get_mandi_dataset_summary():
     }
 
 
+@router.get("/freshness")
+async def get_market_data_freshness() -> Dict[str, Any]:
+    """
+    Returns market dataset freshness status, observation date span,
+    last-verified timestamp, and stale indicator.
+    """
+    if not PROCESSED_REPORT_PATH.exists():
+        return {
+            "dataset": "Karnataka APMC Mandi Wholesale Prices",
+            "freshness_status": "UNAVAILABLE",
+            "is_stale": True,
+            "message": "Market dataset has not been ingested yet."
+        }
+
+    with open(PROCESSED_REPORT_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    file_mtime = PROCESSED_REPORT_PATH.stat().st_mtime
+    from datetime import datetime, timezone
+    last_updated = datetime.fromtimestamp(file_mtime, tz=timezone.utc)
+    
+    end_date_str = data.get("date_coverage_end")
+    start_date_str = data.get("date_coverage_start")
+    
+    # Check staleness: if coverage end date or file update is older than 30 days
+    is_stale = False
+    now = datetime.now(timezone.utc)
+    if (now - last_updated).days > 30:
+        is_stale = True
+
+    return {
+        "dataset": "Karnataka APMC Mandi Wholesale Prices",
+        "source_provider": "Agmarknet / Karnataka Open Government Data (data.gov.in)",
+        "source_url": "https://data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi",
+        "freshness_status": "STALE_RETAINED" if is_stale else "ACTIVE_VERIFIED",
+        "is_stale": is_stale,
+        "last_verified_utc": last_updated.isoformat(),
+        "date_coverage_start": start_date_str,
+        "date_coverage_end": end_date_str,
+        "total_records": data.get("canonical_rows_emitted"),
+        "total_commodities": len(data.get("categorical_columns", {}).get("commodity", {}).get("top_categories", {})),
+        "total_markets": len(data.get("categorical_columns", {}).get("market", {}).get("top_categories", {})),
+        "freshness_policy": (
+            "If upstream Agmarknet or OGD APIs are delayed or unreachable, historical verified "
+            "records are retained strictly with a 'STALE_RETAINED' indicator. We never silently substitute stale data."
+        )
+    }
+
+
 @router.get("/integrated-profile")
 async def get_integrated_profile() -> Dict[str, Any]:
     """Returns the unified agricultural profile aligning Mandi prices, APY yield, costs, and ICAR guidelines."""

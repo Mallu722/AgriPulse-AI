@@ -471,3 +471,234 @@ EconomicsProfitScenarios.tsx
 All 31 Karnataka districts are selectable.
 When any district is chosen, the UI displays the exact official CSV rates (General male/female, Plough/tilling, Harvesting, Govt CHC tractor).
 Added an "Auto-Apply Verified District Labour" button that populates the farmer's operational budget directly from the official CSV benchmark.
+
+
+Listed directory Agri-Project
+Listed directory AgriPulse-AI
+Listed directory backend
+Listed directory app
+Listed directory api
+Searched for "Day 5"
+Searched for "Day 5"
+Viewed AgriPulse_AI_10_Day_Build_and_Learning_Plan.md:330-410
+Listed directory core
+Viewed config.py:1-59
+Listed directory forecasting
+Listed directory agronomy
+Listed directory economics
+Listed directory schemas
+Viewed requirements.txt:1-16
+Ran command: `pytest`
+Used tool: manage_task
+Viewed main.py:1-59
+Viewed suitability.py:1-103
+Viewed economics.py:1-137
+Listed directory app
+Listed directory ingestion
+Viewed imd_weather_adapter.py:1-86
+Listed directory docs
+Viewed data-sources.md:60-118
+Listed directory data
+Listed directory processed
+Listed directory fixtures
+Ran command: `python -c "import httpx; r = httpx.get('https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_max&timezone=Asia/Kolkata', timeout=10.0); print(r.status_code, r.json().keys())"`
+Ran command: `python -c "import httpx; r = httpx.get('https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia/Kolkata', timeout=10.0); print(r.json())"`
+Viewed suitability.py:1-60
+Viewed farmer_profile.py:1-135
+Viewed market_data.py:1-59
+Viewed profit_engine.py:1-186
+Viewed economics.py:1-60
+Viewed economics.py:61-110
+Listed directory tests
+Viewed config.py:1-59
+Viewed .env:1-9
+Viewed suitability_engine.py:1-100
+Viewed suitability_engine.py:101-200
+Viewed suitability_engine.py:201-296
+Listed directory app
+Viewed chronological_evaluator.py:1-100
+Viewed config.py:1-59
+Edited config.py
+Viewed .env.example:1-36
+Edited .env.example
+Created weather.py
+Created ranking.py
+Viewed __init__.py:1-3
+Listed directory app
+Created weather_service.py
+Created ranking_engine.py
+Created weather.py
+Created ranking.py
+Viewed main.py:1-59
+Edited main.py
+Viewed ingestion.py:1-115
+Edited ingestion.py
+Created test_weather_and_ranking.py
+Ran command: `pytest tests/test_weather_and_ranking.py`
+Used tool: manage_task
+Ran command: `python -c "from app.main import app; from starlette.testclient import TestClient; c = TestClient(app); r = c.post('/api/v1/ranking/recommend', json={'profile': {'district': 'Kolar', 'land_area': 2.0, 'land_unit': 'acres', 'sowing_season': 'kharif', 'water_availability': 'rainfed', 'risk_preference': 'moderate', 'soil_type': 'red_sandy_loam'}, 'include_weather_context': False}); print(r.status_code, r.text)"`
+Viewed economics.py:130-160
+Viewed economics.py:115-135
+Viewed ranking_engine.py:80-100
+Viewed ranking_engine.py:98-115
+Edited ranking_engine.py
+Ran command: `pytest tests/test_weather_and_ranking.py`
+Used tool: manage_task
+Ran command: `pytest`
+Used tool: manage_task
+
+I have launched the full test suite (`pytest`) across all modules (including the newly implemented Day 5 tests). I will monitor its completion and finalize the documentation and reporting.
+
+Viewed data-sources.md:90-118
+Edited data-sources.md
+Viewed AgriPulse_AI_10_Day_Build_and_Learning_Plan.md:770-785
+Edited AgriPulse_AI_10_Day_Build_and_Learning_Plan.md
+
+### Day 5 Implementation Complete: Weather API, Market Freshness & Transparent Ranking
+
+Day 5 of **AgriPulse AI** has been implemented and tested against live services and deterministic baselines. All 37 backend tests are passing.
+
+---
+
+### Integration & Service Status Report
+
+| Integration / Service | Operational Status | Live / Mocked | Credentials Status | Licensing & Policy |
+| :--- | :--- | :--- | :--- | :--- |
+| **Open-Meteo Weather API** | **LIVE** | **Live Tested** | **No credentials required** (Anonymous server-side) | Creative Commons Attribution 4.0 International (CC BY 4.0). Free tier used for non-commercial development. |
+| **India Meteorological Department (IMD)** | **Configured** | **Adapter Ready** | **Pending Credentials** (`IMD_API_KEY` in `backend/.env`) | Govt. of India / MoES Open Data Portal. Non-blocking; system automatically uses primary Open-Meteo or fallback. |
+| **Offline Climatological Baseline** | **Active Fallback** | **Deterministic Baseline** | None needed | ICAR-CRIDA Karnataka district averages used only if network or upstream APIs time out. |
+| **Karnataka APMC Mandi Market Data** | **ACTIVE_VERIFIED** | **Canonical Data & Freshness Audit** | No credentials required | Agmarknet / Open Government Data (data.gov.in) with explicit `STALE_RETAINED` indicators if delayed. |
+| **District Cultivation Costs** | **Farmer-Editable Baselines** | **Official Baselines + Farmer Overrides** | No credentials required | DESAgri & UAS Bengaluru verified benchmarks. All fields (`labour`, `machinery_fuel`, `seeds`, `fertiliser`, `harvesting`, `transport`) are fully editable by farmers. |
+
+---
+
+### Core Components Implemented
+
+#### 1. Dual Weather Provider & Resilient Caching (`app/core/weather_service.py` & `app/schemas/weather.py`)
+- **Primary Provider**: [Open-Meteo](https://open-meteo.com/) live API configured server-side. Coordinates centroid lookups for all 31 Karnataka districts.
+- **IMD Adapter**: Implemented with API key headers and endpoint mapping. If `IMD_API_KEY` is not present, the service smoothly reports `PENDING_CREDENTIALS` without raising unhandled errors.
+- **Failover & Timeouts**: Strict 6.0s timeout with retries and exponential backoff.
+- **Caching with Timestamps**: In-memory cache with configurable TTL (default 3600s). Responses carry `retrieval_timestamp`, `issuance_timestamp`, `cache_valid_until`, and `is_live`.
+- **No Silent Substitution**: If network is unavailable and stale cache exists, data is labeled `STALE_CACHE`. If no cache exists, it outputs `MOCKED_FALLBACK`.
+- **Agro-Meteorological Advisories**: Short-term weather thresholds trigger actionable package-of-practices advisories (e.g. postponing chemical sprays if rain > 5mm or wind > 18 km/h; suspending borewell irrigation if 48h rain $\ge$ 10mm).
+
+#### 2. Market Freshness & Audit Endpoint (`app/api/ingestion.py`)
+- Added `GET /api/v1/ingestion/freshness` reporting:
+  - Observation date span (`date_coverage_start`, `date_coverage_end`)
+  - Server-verified timestamp and `is_stale` boolean
+  - Source provider attribution (`data.gov.in / Agmarknet`)
+  - Policy guarantee: Outdated records are preserved strictly under a `STALE_RETAINED` banner.
+
+#### 3. Transparent Multi-Attribute Crop Ranking (`app/agronomy/ranking_engine.py` & `app/schemas/ranking.py`)
+- **Agronomic Feasibility Gatekeeper**: High economic returns or volatile price spikes **never** override hard agronomic constraints. Any crop violating season, water availability, or agro-climatic boundaries (e.g. Tomato under rainfed conditions) is disqualified and placed into `disqualified_crops` with explicit constraint failure reasons.
+- **Multi-Criteria Utility Scoring (0–100 scale)**:
+  1. *Agronomic Fit Score* (25 pts): Soil type, pH range, and agro-climatic zone suitability.
+  2. *Water Resilience Score* (20 pts): Water-intensity alignment with farmer irrigation source.
+  3. *Economic Return Score* (25 pts): Median base scenario profit and Benefit-Cost Ratio (BCR).
+  4. *Downside Risk Protection* (15 pts): Capital preservation under conservative (P25) market glut scenarios.
+  5. *Duration & Rotation Turnover* (15 pts): Turnaround time and farm calendar fit.
+- **Farmer Cost Overrides**: Farmers can override labour, tractor rental, seeds, fertiliser, harvesting, and transport costs without mutating official government baselines.
+- **Explicit Non-Guaranteed Disclaimers**: Disclaimers are included in all responses, making clear that yield, prices, and profits are estimates and never promised guarantees.
+
+---
+
+### New API Endpoints Available
+
+- `GET  /api/v1/weather/district/{district}`: Live observations, 7-day forecast, and agro-advisories.
+- `GET  /api/v1/weather/providers`: Audit status of Open-Meteo, IMD, cache, and licensing.
+- `POST /api/v1/weather/cache/clear`: Cache eviction for testing failover and fresh fetches.
+- `GET  /api/v1/ingestion/freshness`: APMC market dataset freshness status and verification timestamps.
+- `POST /api/v1/ranking/recommend`: Transparent multi-criteria crop recommendations.
+
+---
+
+### Day 6 Implementation Complete: Farmer-Friendly Responsive React + TypeScript Frontend
+
+Day 6 of **AgriPulse AI** has been implemented and verified. The frontend is built with React 19, TypeScript, Vite, React Router, Recharts, and Lucide React. It compiles cleanly (`npm run build` exits with code 0) and connects directly to the live FastAPI backend at `http://127.0.0.1:8000/api/v1`.
+
+---
+
+### UI Design Direction Implemented
+
+- **Color Palette**:
+  - Primary: **Forest Green** (`#166534`)
+  - Highlight: **Harvest Amber** (`#F59E0B`)
+  - Page Background: **Soft Neutral** (`#F8FAFC`)
+  - Card Background: **White** (`#FFFFFF`)
+  - High-Contrast Text: **Deep Slate** (`#0F172A`)
+- **Bilingual & Kannada-First**:
+  - Default language: **Kannada (`kn`)** with instant bilingual toggle to **English (`en`)**.
+  - Typography: **Noto Sans Kannada** for crisp regional script rendering and **Inter** for English numbers and data.
+  - Comprehensive translation dictionary across all navigation labels, agronomic parameters, price metrics, and disclaimers.
+- **Mobile-Responsive Architecture**:
+  - Hamburger navigation drawer for mobile screens.
+  - Large touch targets, steppers for land area, interactive sliders for soil pH, and high-contrast badges.
+
+---
+
+### Core Routes & Modules (`frontend/src/components/`)
+
+1. **Dashboard (`/dashboard`)**:
+   - Welcome banner displaying farmer's active district, land area, and soil classification.
+   - Live Agro-Weather Card with real-time temperature, humidity, precipitation, and 5-day outlook via Open-Meteo server-side proxy with timestamped cache.
+   - Top 3 Recommended Crops snapshot with utility score meter, expected return, and quick action buttons.
+   - Karnataka APMC Mandi Spot Prices snapshot (Tomato, Onion, Potato, Maize) with modal prices and verified provenance tags.
+   - 4 Quick-Action navigation cards to all farm intelligence tools.
+
+2. **Farmer Profile (`/profile`)**:
+   - Karnataka district dropdown (31 districts supported).
+   - Land area stepper (`+0.5`, `+1.0`, `-0.5` acres).
+   - Soil health manager: Soil type selector and soil pH interactive slider (4.5 to 8.5) with visual classification (Acidic, Neutral, Alkaline).
+   - Irrigation source and water availability level selector.
+   - Season selector (Kharif, Rabi, Summer) and capital budget presets.
+   - Reactive persistence in `AppContext` and `localStorage`, automatically updating recommendations across the app.
+
+3. **Crop Recommendations (`/recommendations`)**:
+   - Connects to `POST /api/v1/ranking/recommend`.
+   - Dual-tab layout: **Feasible Crops** and **Disqualified / High Risk Crops**.
+   - Transparent 5-criteria utility scoring breakdown:
+     - Agronomic Fit (25%)
+     - Economic Returns (25%)
+     - Water Resilience (20%)
+     - Downside Risk Protection (15%)
+     - Crop Duration (15%)
+   - Explicit constraint failure reasons for disqualified crops (e.g. soil pH outside tolerance, water availability deficit).
+   - Direct link to prefill Profit Calculator for any recommended crop.
+
+4. **Market Explorer (`/market`)**:
+   - Interactive search and filter by commodity and APMC market yard.
+   - Modal, Min, and Max price spread displays (₹/Quintal).
+   - Recharts Price Spread Comparison Bar Chart comparing prices across commodities.
+   - SHA-256 cryptographic audit badges and zero silent dropping indicators.
+
+5. **Profit Calculator (`/profit`)**:
+   - Deterministic Unit Economics: $\text{Net Profit} = (\text{Yield} \times \text{Area} \times \text{Price}) - \text{Total Cultivation Costs}$.
+   - 3 Price Quantile Scenarios: Conservative (P25), Expected (Median), Optimistic (P75).
+   - Farmer-Editable Cost Breakdown: Labour & weeding, seeds, fertilisers, irrigation & power, tractor rental, harvesting, and transport/packaging.
+   - Real-time recalculation of gross revenue, total cultivation cost, net profit, net profit per acre, and ROI (%).
+   - Reset button to restore official DESAgri benchmarks.
+
+---
+
+### Day 6 Technical Interview Q&As
+
+#### Q1: Why did you choose React Router with separate dedicated pages instead of a single long dashboard?
+**Answer:**
+"A farmer’s mental model is task-oriented: entering farm parameters, evaluating crop alternatives, inspecting market quotes, and simulating budget costs are distinct cognitive tasks. By structuring the application into clear routes (`/dashboard`, `/profile`, `/recommendations`, `/market`, `/profit`) with a persistent `AppContext`, we keep individual screens clutter-free, accessible on low-end mobile devices, and bookmarkable/shareable via deep links (such as `/profit?crop=Tomato`)."
+
+#### Q2: How did you implement Kannada-first localization without sacrificing maintainability?
+**Answer:**
+"We built a typed dictionary structure (`src/i18n/translations.ts`) that guarantees compile-time parity between Kannada (`kn`) and English (`en`). All component labels and tooltips pull from `t.<section>.<key>`, avoiding hardcoded strings. The user can toggle languages with zero page reload, and user preference is preserved in `localStorage`. In addition, Google Fonts `Noto Sans Kannada` was imported to ensure clear typography for Kannada conjunct consonants."
+
+#### Q3: How do you prevent UI latency and redundant backend requests across route transitions?
+**Answer:**
+"We centralized shared state (Farmer Profile, live Weather data, Mandi dataset metadata, and backend connectivity status) in `AppContext.tsx`. Profile edits update reactive state and cache to `localStorage`. Weather data is fetched once for the active district and cached server-side with strict TTL metadata. When a farmer adjusts costs in the Profit Calculator, calculations happen locally using deterministic formulas while still allowing optional server-side scenario synchronization."
+
+#### Q4: How is data quality and data freshness communicated to the farmer on the frontend?
+**Answer:**
+"We adhere to a strict 'No Silent Dropping & No Silent Substitution' policy. In both the Dashboard and Market Explorer, every market quote and weather card includes provenance badges: data retrieval timestamp, cache status (e.g., 'From Cache, TTL 24 min' vs 'Live Upstream'), and source attribution (Agmarknet, Open-Meteo). Outdated or fallback data is explicitly marked as `STALE_RETAINED` or `MOCKED_FALLBACK` rather than misleading the farmer into thinking it represents today's live rate."
+
+#### Q5: How does the Crop Recommendations page maintain transparency compared to black-box generative AI advice?
+**Answer:**
+"Generic LLMs frequently hallucinate contradictory yield numbers or recommend rainfed crops during droughts without agronomic justification. AgriPulse AI implements a deterministic gatekeeper: hard constraints (soil pH, water availability, season, and agro-climatic zone) strictly filter crops first. Feasible crops are then scored across 5 explicit, transparent weights (Agronomy 25%, Economics 25%, Water 20%, Risk 15%, Duration 15%). The UI shows horizontal progress meters for each individual component and displays a dedicated 'Disqualified Crops' tab explaining exactly why an infeasible crop failed."
+

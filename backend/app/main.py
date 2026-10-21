@@ -16,6 +16,8 @@ from app.api.health import router as health_router
 from app.api.ingestion import router as ingestion_router
 from app.api.suitability import router as suitability_router
 from app.api.economics import router as economics_router
+from app.api.weather import router as weather_router
+from app.api.ranking import router as ranking_router
 
 # --- Application Factory ---
 app = FastAPI(
@@ -23,7 +25,7 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description=(
         "Karnataka-focused crop suitability, market intelligence, "
-        "profit-scenario and Kannada voice-assistant API."
+        "profit-scenario, weather integration, and Kannada voice-assistant API."
     ),
     docs_url="/docs",
     redoc_url="/redoc",
@@ -43,6 +45,8 @@ app.include_router(health_router, prefix="/api/v1", tags=["Health"])
 app.include_router(ingestion_router, prefix="/api/v1", tags=["Data Ingestion & Quality Audit"])
 app.include_router(suitability_router, prefix="/api/v1", tags=["Agronomy & Crop Suitability"])
 app.include_router(economics_router, prefix="/api/v1", tags=["Economics & Profit Scenarios"])
+app.include_router(weather_router, prefix="/api/v1", tags=["Meteorology & Weather Intelligence"])
+app.include_router(ranking_router, prefix="/api/v1", tags=["Transparent Crop Ranking & Recommendations"])
 
 
 # --- Root Redirect ---

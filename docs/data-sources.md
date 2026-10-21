@@ -115,3 +115,47 @@ A single dataset cannot properly support crop suitability, yield prediction, soi
 - **Safe Semantic Keys**: Datasets are joined on common categorical keys: `(crop, district, season)`.
 - **No Naive Joins**: Daily prices are **never** joined directly to annual yield figures without justified aggregation (e.g. season-level modal price averages).
 - **Transparent Assumptions**: The system never provides profit guarantees; it outputs expected ranges based on verified historical baselines and user inputs.
+
+---
+
+## 5. Weather API & Meteorological Provider Architecture (Day 5)
+
+AgriPulse AI treats weather data strictly as short-term (5–7 day) operational guidance. It maintains a dual-provider architecture with fallback resilience:
+
+### 5.1 Provider Specifications & Licensing
+
+| Provider | Role | Status | License & Cost | API Key Required | Rate Limits |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Open-Meteo** | Primary | **LIVE (Tested)** | Creative Commons Attribution 4.0 (CC BY 4.0). Free for non-commercial open use. | No (Server-side anonymous) | Up to 10,000 calls/day |
+| **IMD (India Met Dept)** | Secondary / Official | **Configured (Pending Credentials)** | Govt. of India Ministry of Earth Sciences Open Data Policy. Institutional registration required. | Yes (`IMD_API_KEY`) | Subject to MoES portal terms |
+| **Offline CRIDA Baseline**| Fallback | **Ready** | ICAR-CRIDA district agro-meteorological averages. | None | Local In-Memory |
+
+### 5.2 Freshness, Caching & Failover Policies
+1. **Cache Duration**: Meteorological responses are cached in memory for 1 hour (`WEATHER_CACHE_TTL_SECONDS=3600`).
+2. **Timeout Control**: External calls enforce a 6.0s timeout with a max of 2 retries and exponential backoff.
+3. **No Silent Substitution**: If live API requests fail and a stale cache is available, the response is explicitly tagged `STALE_CACHE` with the original retrieval timestamp. If no cache exists, the response is returned as `MOCKED_FALLBACK`.
+4. **Agro-Meteorological Advisories**: Short-term weather triggers specific operational rules (spraying postponement if 48h rain > 5mm or wind > 18 km/h; irrigation suspension if rain >= 10mm).
+5. **Operational Scope Caveat**: 7-day weather forecasts are never extrapolated into seasonal monsoon totals or harvest-time commodity prices.
+
+---
+
+## 6. Transparent Multi-Attribute Crop Ranking (Day 5)
+
+### 6.1 Two-Tier Architecture
+1. **Tier 1: Hard Agronomic Feasibility Gatekeeper (Deterministic)**:
+   - Sowing season match (Kharif, Rabi, Summer).
+   - Water availability threshold (e.g., Rainfed farmers are disqualified from water-intensive crops like Tomato).
+   - Agro-climatic district feasibility.
+   - Disqualified crops are strictly isolated and never shown as viable recommendations.
+2. **Tier 2: Multi-Attribute Utility Scoring (0 to 100)**:
+   - **Agronomic Fit Score (25%)**: Soil type match, pH suitability, agro-climatic zone.
+   - **Water Resilience Score (20%)**: Water intensity alignment with farmer's irrigation infrastructure.
+   - **Economic Return Score (25%)**: Expected base-case net profit & Benefit-Cost Ratio (BCR).
+   - **Downside Risk Protection Score (15%)**: Net capital preservation under conservative (P25) market glut scenarios.
+   - **Duration & Rotation Score (15%)**: Turnaround speed and operational land calendar fit.
+
+### 6.2 Farmer Cost Overrides
+Official government cost baselines (DESAgri/UAS Bengaluru) remain immutable. Farmers may override specific cost components (labour, seeds, tractor rental, plant protection, harvesting, transport) directly; the system recalculates net returns on the fly while noting `has_custom_cost_overrides=True`.
+
+### 6.3 Mandatory Disclaimers
+All ranking responses include explicit statements clarifying that yields, market realizations, and profits are forward-looking estimates subject to climate and market volatility and are **never guaranteed**.
