@@ -10,6 +10,7 @@ export interface Translations {
     recommendations: string;
     market: string;
     profit: string;
+    assistant: string;
   };
   dashboard: {
     greeting: string;
@@ -176,6 +177,24 @@ export interface Translations {
   crops: {
     [key: string]: string;
   };
+  assistant: {
+    title: string;
+    subtitle: string;
+    inputPlaceholder: string;
+    askBtn: string;
+    asking: string;
+    quickPromptsTitle: string;
+    verifiedSourcesBadge: string;
+    fallbackBadge: string;
+    citationsTitle: string;
+    assumptionsTitle: string;
+    emptyChatPrompt: string;
+    prompt1: string;
+    prompt2: string;
+    prompt3: string;
+    prompt4: string;
+    unsupportedDisclaimer: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -189,6 +208,7 @@ export const translations: Record<Language, Translations> = {
       recommendations: "Crop Recommendations",
       market: "Market Explorer",
       profit: "Profit Calculator",
+      assistant: "AI Farm Assistant",
     },
     dashboard: {
       greeting: "Welcome, Farmer",
@@ -362,6 +382,24 @@ export const translations: Record<Language, Translations> = {
       Groundnut: "Groundnut (ಕಡಲೆಕಾಯಿ)",
       Chilli: "Green Chilli (ಹಸಿಮೆಣಸಿನಕಾಯಿ)",
     },
+    assistant: {
+      title: "Grounded Agricultural AI Assistant",
+      subtitle: "Ask factual farming questions with official ICAR/UAS citations and verified APMC mandi prices",
+      inputPlaceholder: "Ask about crop guidelines, fertilizer dosage (NPK), blast disease, APMC prices...",
+      askBtn: "Ask Assistant",
+      asking: "Consulting official documents & numerical tools...",
+      quickPromptsTitle: "Quick Agricultural Questions",
+      verifiedSourcesBadge: "ICAR & UAS Verified Guidelines",
+      fallbackBadge: "Verified Excerpt Fallback Mode",
+      citationsTitle: "Supporting Citations & Official Sources",
+      assumptionsTitle: "Grounded Scope & Transparency Disclosures",
+      emptyChatPrompt: "Ask any farming, fertilizer dosage, pest control, or APMC mandi price question.",
+      prompt1: "What is the recommended fertilizer NPK dosage for finger millet ragi in Kolar?",
+      prompt2: "What is the official APMC mandi price of tomato in Kolar today?",
+      prompt3: "How to manage blast disease in ragi? What fungicide to use?",
+      prompt4: "If I grow onion on 2 acres in Karnataka, what is my expected cultivation cost and net profit?",
+      unsupportedDisclaimer: "Answers are grounded strictly in official ICAR, Agricultural University, and APMC documents. Numerical figures are computed deterministically without hallucinations.",
+    },
   },
   kn: {
     appName: "ಅಗ್ರಿಪಲ್ಸ್ ಎಐ (AgriPulse AI)",
@@ -373,6 +411,7 @@ export const translations: Record<Language, Translations> = {
       recommendations: "ಬೆಳೆ ಶಿಫಾರಸುಗಳು",
       market: "ಮಾರುಕಟ್ಟೆ ಎಕ್ಸ್‌ಪ್ಲೋರರ್",
       profit: "ಲಾಭ ಲೆಕ್ಕಾಚಾರ",
+      assistant: "ಕೃಷಿ AI ಸಹಾಯಕ",
     },
     dashboard: {
       greeting: "ನಮಸ್ಕಾರ, ರೈತ ಮಿತ್ರರೇ",
@@ -545,6 +584,24 @@ export const translations: Record<Language, Translations> = {
       Ragi: "ರಾಗಿ (Ragi)",
       Groundnut: "ಕಡಲೆಕಾಯಿ (Groundnut)",
       Chilli: "ಹಸಿಮೆಣಸಿನಕಾಯಿ (Chilli)",
+    },
+    assistant: {
+      title: "ಅಧಿಕೃತ ಕೃಷಿ AI ಸಹಾಯಕ (Grounded Assistant)",
+      subtitle: "ಐಸಿಎಆರ್ ಮತ್ತು ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯದ ದೃಢೀಕೃತ ದಾಖಲೆಗಳು ಹಾಗೂ ಅಧಿಕೃತ ಎಪಿಎಂಸಿ ಮಂಡಿ ದರಗಳೊಂದಿಗೆ ನಿಖರ ಸಲಹೆಗಳು",
+      inputPlaceholder: "ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ (NPK), ರೋಗ ನಿರ್ವಹಣೆ, ಮಂಡಿ ಬೆಲೆ, ಲಾಭದ ಲೆಕ್ಕಾಚಾರ ಕೇಳಿ...",
+      askBtn: "ಪ್ರಶ್ನೆ ಕೇಳಿ",
+      asking: "ಅಧಿಕೃತ ದಾಖಲೆಗಳು ಮತ್ತು ಸೂತ್ರಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...",
+      quickPromptsTitle: "ರೈತರ ಪ್ರಮುಖ ಪ್ರಶ್ನೆಗಳು (Quick Prompts)",
+      verifiedSourcesBadge: "ICAR / UASB ಅಧಿಕೃತ ದಾಖಲೆಗಳು",
+      fallbackBadge: "ದೃಢೀಕೃತ ದಾಖಲೆಗಳ ನೇರ ಉಲ್ಲೇಖ",
+      citationsTitle: "ಅಧಿಕೃತ ಮೂಲಗಳು ಮತ್ತು ಉಲ್ಲೇಖಗಳು (Citations)",
+      assumptionsTitle: "ಪಾರದರ್ಶಕತೆ ಮತ್ತು ಅಧಿಕೃತ ಮಿತಿಗಳ ವಿವರಣೆ",
+      emptyChatPrompt: "ಕೃಷಿ, ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ, ರೋಗ ನಿಯಂತ್ರಣ ಅಥವಾ ಇಂದಿನ ಮಂಡಿ ದರಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
+      prompt1: "ಕೋಲಾರದಲ್ಲಿ ರಾಗಿ ಬೆಳೆಗೆ ಶಿಫಾರಸು ಮಾಡಿದ ರಸಗೊಬ್ಬರ (NPK) ಪ್ರಮಾಣ ಎಷ್ಟು?",
+      prompt2: "ಕೋಲಾರ ಮಂಡಿಯಲ್ಲಿ ಇಂದಿನ ಅಧಿಕೃತ ಟೊಮೆಟೊ ದರ ಎಷ್ಟು?",
+      prompt3: "ರಾಗಿ ಬೆಳೆಗೆ ಬೆಂಕಿ ರೋಗ (Blast) ಬಂದರೆ ಯಾವ ಔಷಧ ಸಿಂಪಡಿಸಬೇಕು?",
+      prompt4: "ನನ್ನ 2 ಎಕರೆ ಜಮೀನಿನಲ್ಲಿ ಈರುಳ್ಳಿ ಬೆಳೆದರೆ ಎಷ್ಟು ಖರ್ಚು ಮತ್ತು ಲಾಭ?",
+      unsupportedDisclaimer: "ಎಲ್ಲಾ ಉತ್ತರಗಳು ಐಸಿಎಆರ್, ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯ ಮತ್ತು ಎಪಿಎಂಸಿ ದತ್ತಾಂಶಗಳ ಆಧಾರದ ಮೇಲೆ ಮಾತ್ರ ನೀಡಲಾಗಿದೆ. ಯಾವುದೇ ಕಲ್ಪಿತ ಅಂಕಿಅಂಶಗಳನ್ನು ನೀಡಲಾಗುವುದಿಲ್ಲ.",
     },
   },
 };

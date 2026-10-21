@@ -12,6 +12,7 @@ import {
   X,
   CloudSun,
   FileText,
+  Bot,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -126,6 +127,15 @@ export const Navbar: React.FC = () => {
             >
               <Calculator size={18} />
               <span>{t.nav.profit}</span>
+            </NavLink>
+
+            <NavLink
+              to="/assistant"
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={closeMenu}
+            >
+              <Bot size={18} />
+              <span>{t.nav.assistant}</span>
             </NavLink>
           </nav>
         </div>
