@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
   Bot,
@@ -13,6 +13,11 @@ import {
   HelpCircle,
   CheckCircle2,
   TrendingUp,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  RotateCcw,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -40,6 +45,20 @@ interface ChatMessage {
   promptInjection?: boolean;
 }
 
+// Helper to strip markdown and symbols so speech is natural and fluent
+const cleanTextForSpeech = (text: string): string => {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+    .replace(/\*(.*?)\*/g, '$1') // Italic
+    .replace(/^#+\s+/gm, '') // Headers
+    .replace(/^>\s+/gm, '') // Quotes
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
+    .replace(/•/g, '') // Bullets
+    .replace(/[#*_~`]/g, '') // Remaining symbols
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export const AiAssistant: React.FC = () => {
   const { t, language, profile, apiBase } = useApp();
 
@@ -49,8 +68,8 @@ export const AiAssistant: React.FC = () => {
       sender: 'assistant',
       text:
         language === 'kn'
-          ? 'ನಮಸ್ಕಾರ! ನಾನು ಅಗ್ರಿಪಲ್ಸ್ ಕೃಷಿ AI ಸಹಾಯಕ. ಐಸಿಎಆರ್ (ICAR), ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯಗಳ ಪ್ಯಾಕೇಜ್ ಆಫ್ ಪ್ರಾಕ್ಟೀಸಸ್ ಮತ್ತು ಎಪಿಎಂಸಿ ಮಂಡಿ ದತ್ತಾಂಶಗಳ ಆಧಾರದ ಮೇಲೆ ಮಾತ್ರ ನಾನು ನಿಖರವಾದ ಕೃಷಿ ಮಾಹಿತಿ ಮತ್ತು ಬೆಲೆಗಳನ್ನು ಒದಗಿಸುತ್ತೇನೆ. ಕೆಳಗಿನ ಪ್ರಮುಖ ಪ್ರಶ್ನೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಬಹುದು ಅಥವಾ ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ನೇರವಾಗಿ ಬರೆಯಬಹುದು.'
-          : 'Welcome! I am the AgriPulse Agricultural AI Assistant. I provide factual farming guidance strictly grounded in official ICAR, Agricultural University Package of Practices, and APMC mandi records. Select a quick prompt below or type your question.',
+          ? 'ನಮಸ್ಕಾರ! ನಾನು ಅಗ್ರಿಪಲ್ಸ್ ಕೃಷಿ AI ಸಹಾಯಕ. ಐಸಿಎಆರ್ (ICAR), ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯಗಳ ಪ್ಯಾಕೇಜ್ ಆಫ್ ಪ್ರಾಕ್ಟೀಸಸ್ ಮತ್ತು ಎಪಿಎಂಸಿ ಮಂಡಿ ದತ್ತಾಂಶಗಳ ಆಧಾರದ ಮೇಲೆ ಮಾತ್ರ ನಾನು ನಿಖರವಾದ ಕೃಷಿ ಮಾಹಿತಿ ಮತ್ತು ಬೆಲೆಗಳನ್ನು ಒದಗಿಸುತ್ತೇನೆ. ಮೈಕ್ ಬಟನ್ ಒತ್ತಿ ಕನ್ನಡದಲ್ಲೇ ಮಾತನಾಡಬಹುದು!'
+          : 'Welcome! I am the AgriPulse Agricultural AI Assistant. I provide factual farming guidance strictly grounded in official ICAR, Agricultural University Package of Practices, and APMC mandi records. You can also click the mic to speak in Kannada or English!',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       mode: 'retrieval_excerpt_fallback',
       assumptions: t.assistant.unsupportedDisclaimer,
@@ -60,6 +79,128 @@ export const AiAssistant: React.FC = () => {
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
+
+  // Voice Input (STT) State
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const recognitionRef = useRef<any>(null);
+
+  // Voice Output (TTS) State
+  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
+
+  // Initialize Web Speech API for Voice Input
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = language === 'kn' ? 'kn-IN' : 'en-IN';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0].transcript)
+          .join('');
+        setInputQuery(transcript);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      setSpeechSupported(false);
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [language]);
+
+  // Handle Speech-to-Text Toggle
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      // Set language based on active choice (default kn-IN for Kannada)
+      recognitionRef.current.lang = language === 'kn' ? 'kn-IN' : 'en-IN';
+      try {
+        recognitionRef.current.start();
+      } catch {
+        // Recognition already running or restarting
+      }
+    }
+  };
+
+  // Text-to-Speech Handler
+  const speakMessage = (msgId: string, text: string) => {
+    if (!('speechSynthesis' in window)) return;
+
+    // If already speaking this message, stop it
+    if (currentlySpeakingId === msgId) {
+      window.speechSynthesis.cancel();
+      setCurrentlySpeakingId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const isKn = anyKannadaChar(cleanText) || language === 'kn';
+    utterance.lang = isKn ? 'kn-IN' : 'en-IN';
+    utterance.rate = 0.95; // Slightly slower, clear pace for farmers
+
+    // Try finding an installed Kannada voice
+    const voices = window.speechSynthesis.getVoices();
+    const knVoice = voices.find((v) => v.lang.startsWith('kn') || v.name.includes('Kannada'));
+    if (knVoice) {
+      utterance.voice = knVoice;
+    }
+
+    utterance.onstart = () => {
+      setCurrentlySpeakingId(msgId);
+    };
+
+    utterance.onend = () => {
+      setCurrentlySpeakingId(null);
+    };
+
+    utterance.onerror = () => {
+      setCurrentlySpeakingId(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setCurrentlySpeakingId(null);
+    }
+  };
+
+  const anyKannadaChar = (str: string) => /[\u0C80-\u0CFF]/.test(str);
 
   const toggleCitations = (msgId: string) => {
     setExpandedCitations((prev) => ({
@@ -71,6 +212,8 @@ export const AiAssistant: React.FC = () => {
   const handleSendQuery = async (queryToSend?: string) => {
     const q = (queryToSend || inputQuery).trim();
     if (!q || loading) return;
+
+    stopSpeaking();
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -101,8 +244,9 @@ export const AiAssistant: React.FC = () => {
       const res = await axios.post(`${apiBase}/assistant`, payload, { timeout: 8000 });
       const data = res.data;
 
+      const assistantMsgId = `assistant-${Date.now()}`;
       const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+        id: assistantMsgId,
         sender: 'assistant',
         text: data.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -115,18 +259,32 @@ export const AiAssistant: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
+
+      // If Auto-read is enabled, speak the answer aloud automatically!
+      if (autoSpeak) {
+        setTimeout(() => {
+          speakMessage(assistantMsgId, data.answer);
+        }, 300);
+      }
     } catch {
+      const errorMsgId = `assistant-err-${Date.now()}`;
+      const errorMsgText =
+        language === 'kn'
+          ? 'ಸರ್ವರ್ ಸಂಪರ್ಕದಲ್ಲಿ ತೊಂದರೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.'
+          : 'Unable to communicate with assistant backend. Please verify your connection or try again.';
+
       const errorMsg: ChatMessage = {
-        id: `assistant-err-${Date.now()}`,
+        id: errorMsgId,
         sender: 'assistant',
-        text:
-          language === 'kn'
-            ? 'ಸರ್ವರ್ ಸಂಪರ್ಕದಲ್ಲಿ ತೊಂದರೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.'
-            : 'Unable to communicate with assistant backend. Please verify your connection or try again.',
+        text: errorMsgText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         abstention: true,
       };
       setMessages((prev) => [...prev, errorMsg]);
+
+      if (autoSpeak) {
+        setTimeout(() => speakMessage(errorMsgId, errorMsgText), 300);
+      }
     } finally {
       setLoading(false);
     }
@@ -150,6 +308,35 @@ export const AiAssistant: React.FC = () => {
           <h1 className="page-heading">{t.assistant.title}</h1>
           <p className="page-subheading">{t.assistant.subtitle}</p>
         </div>
+
+        {/* Voice Controls: Auto-read toggle & Stop speaking */}
+        <div className="voice-controls-top" style={{ marginLeft: 'auto' }}>
+          <button
+            type="button"
+            onClick={() => setAutoSpeak(!autoSpeak)}
+            className={`btn-voice-toggle ${autoSpeak ? 'active' : ''}`}
+            title="ಉತ್ತರವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಧ್ವನಿಯಲ್ಲಿ ಓದಿ"
+          >
+            {autoSpeak ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            <span>
+              {autoSpeak
+                ? language === 'kn' ? 'ಧ್ವನಿ: ಆನ್ (Voice ON)' : 'Audio: ON'
+                : language === 'kn' ? 'ಧ್ವನಿ: ಆಫ್ (Voice OFF)' : 'Audio: OFF'}
+            </span>
+          </button>
+
+          {currentlySpeakingId && (
+            <button
+              type="button"
+              onClick={stopSpeaking}
+              className="btn-stop-audio"
+              title="ಧ್ವನಿಯನ್ನು ನಿಲ್ಲಿಸಿ"
+            >
+              <VolumeX size={16} />
+              <span>ನಿಲ್ಲಿಸಿ (Stop)</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Grounding & Provenance Banner */}
@@ -164,7 +351,7 @@ export const AiAssistant: React.FC = () => {
         </div>
         <div className="grounding-pill">
           <Sparkles size={18} className="text-warning" />
-          <span>ಕನ್ನಡ ಮತ್ತು ಇಂಗ್ಲಿಷ್ ದ್ವಿಭಾಷಾ ಬೆಂಬಲ</span>
+          <span>ಕನ್ನಡ ಧ್ವನಿ ಇನ್ಪುಟ್ (Mic) & ಕನ್ನಡ ಆಡಿಯೋ ಸಹಾಯಕ</span>
         </div>
       </div>
 
@@ -195,6 +382,7 @@ export const AiAssistant: React.FC = () => {
           const isUser = msg.sender === 'user';
           const hasCitations = msg.citations && msg.citations.length > 0;
           const isExpanded = !!expandedCitations[msg.id];
+          const isSpeakingThis = currentlySpeakingId === msg.id;
 
           return (
             <div key={msg.id} className={`chat-message-row ${isUser ? 'user-row' : 'assistant-row'}`}>
@@ -207,7 +395,33 @@ export const AiAssistant: React.FC = () => {
                   <span className="sender-name">
                     {isUser ? (profile.farmer_name || 'ನೀವು / You') : 'ಅಗ್ರಿಪಲ್ಸ್ ಕೃಷಿ AI (AgriPulse)'}
                   </span>
-                  <span className="timestamp">{msg.timestamp}</span>
+                  <div className="bubble-header-actions">
+                    <span className="timestamp">{msg.timestamp}</span>
+
+                    {/* Audio Speaker Play/Pause Button on each assistant bubble */}
+                    {!isUser && (
+                      <button
+                        type="button"
+                        onClick={() => speakMessage(msg.id, msg.text)}
+                        className={`btn-bubble-audio ${isSpeakingThis ? 'speaking' : ''}`}
+                        title={isSpeakingThis ? 'ಆಡಿಯೋ ನಿಲ್ಲಿಸಿ (Stop Audio)' : 'ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ (Listen in Kannada)'}
+                      >
+                        {isSpeakingThis ? (
+                          <>
+                            <div className="audio-wave-anim">
+                              <span></span><span></span><span></span>
+                            </div>
+                            <span>ನಿಲ್ಲಿಸಿ</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 size={15} />
+                            <span>ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ (Listen)</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Mode & Abstention Indicators */}
@@ -215,9 +429,9 @@ export const AiAssistant: React.FC = () => {
                   <div className="msg-badges-strip">
                     <span className="mode-badge">
                       <BookOpen size={13} />
-                      {msg.mode === 'retrieval_excerpt_fallback'
-                        ? t.assistant.fallbackBadge
-                        : 'ದೃಢೀಕೃತ AI ಸಂಶ್ಲೇಷಣೆ'}
+                      {msg.mode === 'llm_synthesized'
+                        ? 'ದೃಢೀಕೃತ AI ಸಂಶ್ಲೇಷಣೆ (Ollama / LLM Grounded)'
+                        : t.assistant.fallbackBadge}
                     </span>
                     {msg.abstention && (
                       <span className="abstention-badge">
@@ -322,7 +536,24 @@ export const AiAssistant: React.FC = () => {
         )}
       </div>
 
-      {/* Input Box Row */}
+      {/* Voice Input Active Banner */}
+      {isListening && (
+        <div className="mic-listening-banner">
+          <div className="listening-pulse-dot"></div>
+          <span className="listening-text">
+            🎤 ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ... ನಾವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ (Listening to Kannada speech... speak now)
+          </span>
+          <button
+            type="button"
+            onClick={toggleListening}
+            className="btn-cancel-listening"
+          >
+            ಮುಗಿಸಿ (Done)
+          </button>
+        </div>
+      )}
+
+      {/* Input Box Row with Mic Button */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -330,14 +561,41 @@ export const AiAssistant: React.FC = () => {
         }}
         className="assistant-input-box"
       >
+        {/* Kannada Voice Mic Button */}
+        {speechSupported && (
+          <button
+            type="button"
+            onClick={toggleListening}
+            className={`btn-mic-record ${isListening ? 'listening' : ''}`}
+            title="ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿ (Click to speak in Kannada)"
+          >
+            {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+          </button>
+        )}
+
         <input
           type="text"
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
-          placeholder={t.assistant.inputPlaceholder}
+          placeholder={
+            isListening
+              ? 'ಕೇಳಿಸಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ... ಮಾತನಾಡಿ (Listening... speak now)'
+              : t.assistant.inputPlaceholder
+          }
           disabled={loading}
           className="assistant-text-input"
         />
+
+        {inputQuery.trim() && (
+          <button
+            type="button"
+            onClick={() => setInputQuery('')}
+            className="btn-clear-input"
+            title="ತೆರವುಗೊಳಿಸಿ"
+          >
+            <RotateCcw size={15} />
+          </button>
+        )}
 
         <button
           type="submit"

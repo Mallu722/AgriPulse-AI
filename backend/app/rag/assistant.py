@@ -202,7 +202,7 @@ class AgriPulseAssistant:
             )
 
         # 7. Synthesize Response
-        answer_text, mode = self._synthesize_grounded_response(
+        answer_text, mode = await self._synthesize_grounded_response(
             query=query,
             lang=lang,
             intent=intent,
@@ -233,7 +233,7 @@ class AgriPulseAssistant:
             prompt_injection_flagged=False
         )
 
-    def _synthesize_grounded_response(
+    async def _synthesize_grounded_response(
         self,
         query: str,
         lang: str,
@@ -244,12 +244,26 @@ class AgriPulseAssistant:
         tool_outputs: Dict[str, Any]
     ) -> tuple[str, str]:
         """
-        Synthesizes the final answer text.
-        If LLM_API_KEY is not configured, provides an authentic structured excerpt synthesis.
+        Synthesizes the final answer text using configured LLM when available,
+        with strict deterministic fallback to authenticated excerpts.
         """
-        # Check if LLM API key is present
-        # In this implementation, if no LLM key is configured, we provide authentic excerpt synthesis
-        # which satisfies: "When no LLM key is configured, return clearly labelled retrieved excerpts, not a fake generated answer."
+        # If LLM API key is present, attempt grounded LLM synthesis
+        if settings.LLM_API_KEY:
+            try:
+                llm_response = await self._call_llm(
+                    query=query,
+                    lang=lang,
+                    intent=intent,
+                    district=district,
+                    citations=citations,
+                    tool_outputs=tool_outputs
+                )
+                if llm_response and len(llm_response.strip()) > 20:
+                    return llm_response.strip(), "llm_synthesized"
+            except Exception:
+                # Graceful zero-failure fallback
+                pass
+
         mode = "retrieval_excerpt_fallback"
         sections: List[str] = []
 
@@ -332,3 +346,62 @@ class AgriPulseAssistant:
 
         final_answer = "\n\n".join(sections)
         return final_answer, mode
+
+    async def _call_llm(
+        self,
+        query: str,
+        lang: str,
+        intent: str,
+        district: str,
+        citations: List[Citation],
+        tool_outputs: Dict[str, Any]
+    ) -> Optional[str]:
+        """Calls the configured LLM endpoint with grounded tool facts and document context."""
+        import httpx
+
+        system_prompt = (
+            "You are AgriPulse AI, an expert, trustworthy agricultural decision support system for Karnataka farmers.\n"
+            "CRITICAL INSTRUCTIONS:\n"
+            "1. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE KANNADA.\n"
+            "2. Never hallucinate or invent prices, yields, or profits. Use ONLY the provided tool numbers and ICAR facts.\n"
+            "3. Ground your agronomic recommendations strictly on the provided official excerpts and citations.\n"
+            "4. Structure your response clearly with helpful bullet points."
+        )
+
+        context_parts = []
+        if tool_outputs:
+            context_parts.append(f"VERIFIED TOOL DATA: {tool_outputs}")
+        if citations:
+            excerpts_text = "\n".join([f"- [{c.issuer} - {c.document_title}]: {c.excerpt}" for c in citations])
+            context_parts.append(f"OFFICIAL GUIDELINE EXCERPTS:\n{excerpts_text}")
+
+        user_content = (
+            f"User Question: {query}\n"
+            f"Target District: {district}\n"
+            f"Target Language: {'Kannada' if lang == 'kn' else 'English'}\n\n"
+            + "\n\n".join(context_parts)
+        )
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.LLM_API_KEY}"
+        }
+        payload = {
+            "model": settings.LLM_MODEL or "llama3",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 800
+        }
+
+        endpoint = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data.get("choices", [{}])[0].get("message", {}).get("content")
+                return content
+            return None
+
