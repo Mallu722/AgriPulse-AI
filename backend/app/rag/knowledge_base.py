@@ -13,6 +13,8 @@ Contains verified excerpts from official documents:
 Each document and section chunk preserves immutable provenance metadata.
 """
 
+import os
+import json
 from typing import List, Dict, Any
 
 KNOWLEDGE_DOCUMENTS: List[Dict[str, Any]] = [
@@ -331,6 +333,69 @@ KNOWLEDGE_DOCUMENTS: List[Dict[str, Any]] = [
         }
     }
 ]
+
+
+def _load_village_qa_documents() -> List[Dict[str, Any]]:
+    docs = []
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    data_file = os.path.join(base_dir, "data", "village_qa_kannada.jsonl")
+    if not os.path.exists(data_file):
+        return docs
+
+    category_issuer_map = {
+        "MARKET_PRICE": ("Directorate of Agricultural Marketing / Agmarknet APMC", "Karnataka APMC Mandi Benchmark & Daily Price Advisory"),
+        "NUTRIENT_FERTILIZER": ("UAS Bengaluru & Dept of Agriculture Karnataka", "Package of Practices: Soil Health, Biofertilizers & Nutrient Management"),
+        "PEST_MANAGEMENT": ("ICAR & UAS Dharwad Entomology Division", "Integrated Pest Management (IPM) & Plant Protection Practices"),
+        "CROP_DISEASE": ("ICAR-IIHR & UAS Bengaluru Plant Pathology", "Official Plant Disease Diagnostics & Fungicidal Advisory"),
+        "SOWING_VARIETIES": ("Karnataka State Seed Corporation & UAS Bengaluru", "Sowing Calendar, Certified Varieties & Seed Treatment Protocols"),
+        "IRRIGATION_WATER": ("Horticulture Dept & Watershed Development Karnataka", "Micro-Irrigation Guidelines, PMKSY Subsidy & Water Conservation"),
+        "GOVT_SCHEMES": ("Government of Karnataka - Dept of Agriculture & e-Governance", "Farmer Welfare Schemes, PM-Kisan, FRUITS Portal & Subsidies"),
+        "LIVESTOCK_DAIRY": ("Animal Husbandry Dept Karnataka & NDRI / KMF", "Livestock Health, FMD Disease Control, Fodder & Dairy Management"),
+        "POST_HARVEST_STORAGE": ("Central Warehousing Corporation & Directorate of Horticulture", "Post-Harvest Management, Scientific Grain Storage & Helplines")
+    }
+
+    try:
+        with open(data_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                item = json.loads(line)
+                cat = item.get("category", "GENERAL")
+                issuer, doc_title = category_issuer_map.get(
+                    cat, 
+                    ("ICAR & Karnataka Agricultural Universities", "Karnataka Agricultural Package of Practices")
+                )
+                q_kn = item.get("question_kn", "")
+                ans_kn = item.get("answer_template_kn", "")
+                keywords = item.get("keywords_kn", []) + [item.get("crop", ""), cat.lower()]
+
+                chunk = {
+                    "chunk_id": item.get("id", "VKB-000"),
+                    "doc_id": f"KAR-VKB-{cat}",
+                    "issuer": issuer,
+                    "document_title": doc_title,
+                    "source_url": "https://raitamitra.karnataka.gov.in",
+                    "publication_date": "2026-10-21",
+                    "retrieval_date": "2026-10-22",
+                    "version": "Raitha Mitra v2.4",
+                    "section": f"{cat}: {q_kn}",
+                    "covered_crop": item.get("crop", "General"),
+                    "covered_region": "Karnataka (All Districts)",
+                    "language": "en/kn",
+                    "keywords": keywords,
+                    "content_en": f"{item.get('question_en', q_kn)}: {ans_kn}",
+                    "content_kn": f"ಪ್ರಶ್ನೆ: {q_kn}\nಅಧಿಕೃತ ಕೃಷಿ ಉತ್ತರ: {ans_kn}",
+                    "numeric_facts": {}
+                }
+                docs.append(chunk)
+    except Exception as e:
+        print(f"Warning: Failed to load village_qa_kannada.jsonl: {e}")
+
+    return docs
+
+
+KNOWLEDGE_DOCUMENTS.extend(_load_village_qa_documents())
 
 
 def get_all_sources_metadata() -> List[Dict[str, Any]]:

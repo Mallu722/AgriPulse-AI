@@ -73,6 +73,181 @@ KANNADA_DISTRICT_MAP = {
     "ಕೊಡಗು": "Kodagu"
 }
 
+ENGLISH_TO_KANNADA_CROP = {
+    "Onion": "ಈರುಳ್ಳಿ",
+    "Tomato": "ಟೊಮೆಟೊ",
+    "Potato": "ಆಲೂಗಡ್ಡೆ",
+    "Maize": "ಮೆಕ್ಕೆಜೋಳ",
+    "Ragi": "ರಾಗಿ",
+    "Cotton": "ಹತ್ತಿ",
+    "Tur": "ತೊಗರಿ",
+    "Chilli": "ಮೆಣಸಿನಕಾಯಿ",
+    "Groundnut": "ಶೇಂಗಾ",
+    "Paddy": "ಭತ್ತ",
+    "Arecanut": "ಅಡಿಕೆ",
+    "Ginger": "ಶುಂಠಿ",
+    "Garlic": "ಬೆಳ್ಳುಳ್ಳಿ",
+    "Banana": "ಬಾಳೆ",
+    "Sugarcane": "ಕಬ್ಬು",
+    "Copra": "ಕೊಬ್ಬರಿ",
+    "Turmeric": "ಅರಿಶಿನ",
+    "Coffee": "ಕಾಫಿ",
+    "Cardamom": "ಏಲಕ್ಕಿ",
+    "Mango": "ಮಾವು",
+    "Pomegranate": "ದಾಳಿಂಬೆ",
+    "Grapes": "ದ್ರಾಕ್ಷಿ",
+    "Coriander": "ಕೊತ್ತಂಬರಿ",
+    "Flowers": "ಹೂವು",
+    "General": "ಬೆಳೆ"
+}
+
+ENGLISH_TO_KANNADA_DISTRICT = {
+    "Kolar": "ಕೋಲಾರ",
+    "Bengaluru Urban": "ಬೆಂಗಳೂರು",
+    "Bengaluru Rural": "ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ",
+    "Bangalore Urban": "ಬೆಂಗಳೂರು",
+    "Bangalore Rural": "ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ",
+    "Bangalore": "ಬೆಂಗಳೂರು",
+    "Belagavi": "ಬೆಳಗಾವಿ",
+    "Belgaum": "ಬೆಳಗಾವಿ",
+    "Mysuru": "ಮೈಸೂರು",
+    "Mysore": "ಮೈಸೂರು",
+    "Davanagere": "ದಾವಣಗೆರೆ",
+    "Haveri": "ಹಾವೇರಿ",
+    "Chitradurga": "ಚಿತ್ರದುರ್ಗ",
+    "Tumakuru": "ತುಮಕೂರು",
+    "Tumkur": "ತುಮಕೂರು",
+    "Mandya": "ಮಂಡ್ಯ",
+    "Hassan": "ಹಾಸನ",
+    "Chikkaballapura": "ಚಿಕ್ಕಬಳ್ಳಾಪುರ",
+    "Chikkaballapur": "ಚಿಕ್ಕಬಳ್ಳಾಪುರ",
+    "Ballari": "ಬಳ್ಳಾರಿ",
+    "Bellary": "ಬಳ್ಳಾರಿ",
+    "Raichur": "ರಾಯಚೂರು",
+    "Kalaburagi": "ಕಲಬುರಗಿ",
+    "Gulbarga": "ಕಲಬುರಗಿ",
+    "Bidar": "ಬೀದರ್",
+    "Yadgir": "ಯಾದಗಿರಿ",
+    "Shivamogga": "ಶಿವಮೊಗ್ಗ",
+    "Shimoga": "ಶಿವಮೊಗ್ಗ",
+    "Dharwad": "ಧಾರವಾಡ",
+    "Hubballi": "ಹುಬ್ಬಳ್ಳಿ",
+    "Hubli": "ಹುಬ್ಬಳ್ಳಿ",
+    "Gadag": "ಗದಗ",
+    "Koppal": "ಕೊಪ್ಪಳ",
+    "Vijayapura": "ವಿಜಯಪುರ",
+    "Bijapur": "ವಿಜಯಪುರ",
+    "Bagalkot": "ಬಾಗಲಕೋಟೆ",
+    "Ramanagara": "ರಾಮನಗರ",
+    "Chikkamagaluru": "ಚಿಕ್ಕಮಗಳೂರು",
+    "Udupi": "ಉಡುಪಿ",
+    "Kodagu": "ಕೊಡಗು",
+    "Coorg": "ಕೊಡಗು",
+}
+
+
+def to_kannada_market_name(market: str) -> str:
+    """Translates APMC market yard names into fluent Kannada."""
+    res = market
+    for en, kn in ENGLISH_TO_KANNADA_DISTRICT.items():
+        res = re.sub(r'\b' + re.escape(en) + r'\b', kn, res, flags=re.IGNORECASE)
+    res = re.sub(r'\bAPMC\b', 'ಎಪಿಎಂಸಿ', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bYard\b', 'ಮಂಡಿ', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bMandi\b', 'ಮಂಡಿ', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bMarket\b', 'ಮಾರುಕಟ್ಟೆ', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bBinny Mill\b', 'ಬಿನ್ನಿ ಮಿಲ್', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bYeshwanthpur\b', 'ಯಶವಂತಪುರ', res, flags=re.IGNORECASE)
+    res = re.sub(r'\bState Average\b', 'ರಾಜ್ಯ ಸರಾಸರಿ', res, flags=re.IGNORECASE)
+    return res.strip()
+
+
+KANNADA_UNITS = {
+    0: "ಸೊನ್ನೆ", 1: "ಒಂದು", 2: "ಎರಡು", 3: "ಮೂರು", 4: "ನಾಲ್ಕು", 5: "ಐದು",
+    6: "ಆರು", 7: "ಏಳು", 8: "ಎಂಟು", 9: "ಒಂಬತ್ತು", 10: "ಹತ್ತು",
+    11: "ಹನ್ನೊಂದು", 12: "ಹನ್ನೆರಡು", 13: "ಹದಿಮೂರು", 14: "ಹದಿನಾಲ್ಕು", 15: "ಹದಿನೈದು",
+    16: "ಹದಿನಾರು", 17: "ಹದಿನೇಳು", 18: "ಹದಿನೆಂಟು", 19: "ಹತ್ತೊಂಬತ್ತು", 20: "ಇಪ್ಪತ್ತು",
+    21: "ಇಪ್ಪತ್ತೊಂದು", 22: "ಇಪ್ಪತ್ತೆರಡು", 23: "ಇಪ್ಪತ್ತಮೂರು", 24: "ಇಪ್ಪತ್ತನಾಲ್ಕು", 25: "ಇಪ್ಪತ್ತೈದು",
+    26: "ಇಪ್ಪತ್ತಾರು", 27: "ಇಪ್ಪತ್ತೇಳು", 28: "ಇಪ್ಪತ್ತೆಂಟು", 29: "ಇಪ್ಪತ್ತೊಂಬತ್ತು", 30: "ಮೂವತ್ತು",
+    31: "ಮೂವತ್ತೊಂದು", 32: "ಮೂವತ್ತೆರಡು", 33: "ಮೂವತ್ತಮೂರು", 34: "ಮೂವತ್ತನಾಲ್ಕು", 35: "ಮೂವತ್ತೈದು",
+    36: "ಮೂವತ್ತಾರು", 37: "ಮೂವತ್ತೇಳು", 38: "ಮೂವತ್ತೆಂಟು", 39: "ಮೂವತ್ತೊಂಬತ್ತು", 40: "ನಲವತ್ತು",
+    41: "ನಲವತ್ತೊಂದು", 42: "ನಲವತ್ತೆರಡು", 43: "ನಲವತ್ತಮೂರು", 44: "ನಲವತ್ತನಾಲ್ಕು", 45: "ನಲವತ್ತೈದು",
+    46: "ನಲವತ್ತಾರು", 47: "ನಲವತ್ತೇಳು", 48: "ನಲವತ್ತೆಂಟು", 49: "ನಲವತ್ತೊಂಬತ್ತು", 50: "ಐವತ್ತು",
+    51: "ಐವತ್ತೊಂದು", 52: "ಐವತ್ತೆರಡು", 53: "ಐವತ್ತಮೂರು", 54: "ಐವತ್ತನಾಲ್ಕು", 55: "ಐವತ್ತೈದು",
+    56: "ಐವತ್ತಾರು", 57: "ಐವತ್ತೇಳು", 58: "ಐವತ್ತೆಂಟು", 59: "ಐವತ್ತೊಂಬತ್ತು", 60: "ಅರವತ್ತು",
+    61: "ಅರವತ್ತೊಂದು", 62: "ಅರವತ್ತೆರಡು", 63: "ಅರವತ್ತಮೂರು", 64: "ಅರವತ್ತನಾಲ್ಕು", 65: "ಅರವತ್ತೈದು",
+    66: "ಅರವತ್ತಾರು", 67: "ಅರವತ್ತೇಳು", 68: "ಅರವತ್ತೆಂಟು", 69: "ಅರವತ್ತೊಂಬತ್ತು", 70: "ಎಪ್ಪತ್ತು",
+    71: "ಎಪ್ಪತ್ತೊಂದು", 72: "ಎಪ್ಪತ್ತೆರಡು", 73: "ಎಪ್ಪತ್ತಮೂರು", 74: "ಎಪ್ಪತ್ತನಾಲ್ಕು", 75: "ಎಪ್ಪತ್ತೈದು",
+    76: "ಎಪ್ಪತ್ತಾರು", 77: "ಎಪ್ಪತ್ತೇಳು", 78: "ಎಪ್ಪತ್ತೆಂಟು", 79: "ಎಪ್ಪತ್ತೊಂಬತ್ತು", 80: "ಎಂಬತ್ತು",
+    81: "ಎಂಬತ್ತೊಂದು", 82: "ಎಂಬತ್ತೆರಡು", 83: "ಎಂಬತ್ತಮೂರು", 84: "ಎಂಬತ್ತನಾಲ್ಕು", 85: "ಎಂಬತ್ತೈದು",
+    86: "ಎಂಬತ್ತಾರು", 87: "ಎಂಬತ್ತೇಳು", 88: "ಎಂಬತ್ತೆಂಟು", 89: "ಎಂಬತ್ತೊಂಬತ್ತು", 90: "ತೊಂಬತ್ತು",
+    91: "ತೊಂಬತ್ತೊಂದು", 92: "ತೊಂಬತ್ತೆರಡು", 93: "ತೊಂಬತ್ತಮೂರು", 94: "ತೊಂಬತ್ತನಾಲ್ಕು", 95: "ತೊಂಬತ್ತೈದು",
+    96: "ತೊಂಬತ್ತಾರು", 97: "ತೊಂಬತ್ತೇಳು", 98: "ತೊಂಬತ್ತೆಂಟು", 99: "ತೊಂಬತ್ತೊಂಬತ್ತು"
+}
+
+KANNADA_HUNDREDS = {
+    1: "ನೂರು", 2: "ಇನ್ನೂರು", 3: "ಮುನ್ನೂರು", 4: "ನಾನೂರು",
+    5: "ಐನೂರು", 6: "ಆರೂರು", 7: "ಏಳನೂರು", 8: "ಎಂಟುನೂರು", 9: "ಒಂಬೈನೂರು"
+}
+
+def number_to_kannada_words(n: int) -> str:
+    """Converts a non-negative integer into standard spoken Kannada words."""
+    if n in KANNADA_UNITS:
+        return KANNADA_UNITS[n]
+    if n < 0:
+        return f"ಮೈನಸ್ {number_to_kannada_words(abs(n))}"
+
+    parts = []
+    # Crores (10,000,000)
+    crores = n // 10000000
+    rem = n % 10000000
+    if crores > 0:
+        parts.append(f"{number_to_kannada_words(crores)} ಕೋಟಿ")
+
+    # Lakhs (100,000)
+    lakhs = rem // 100000
+    rem = rem % 100000
+    if lakhs > 0:
+        parts.append(f"{number_to_kannada_words(lakhs)} ಲಕ್ಷ")
+
+    # Thousands (1,000)
+    thousands = rem // 1000
+    rem = rem % 1000
+    if thousands > 0:
+        parts.append(f"{number_to_kannada_words(thousands)} ಸಾವಿರ")
+
+    # Hundreds (100)
+    hundreds = rem // 100
+    rem = rem % 100
+    if hundreds > 0:
+        parts.append(KANNADA_HUNDREDS.get(hundreds, f"{number_to_kannada_words(hundreds)} ನೂರು"))
+
+    # Remaining 1-99
+    if rem > 0:
+        parts.append(KANNADA_UNITS.get(rem, str(rem)))
+
+    return " ".join(parts)
+
+def convert_all_numbers_to_kannada(text: str) -> str:
+    """Replaces all numerical digits in text with spoken Kannada number words."""
+    if not text:
+        return ""
+    # Convert 1 quintal explicitly to 'ಒಂದು ಕ್ವಿಂಟಾಲ್'
+    text = re.sub(r'\b1\s*ಕ್ವಿಂಟಾಲ್', 'ಒಂದು ಕ್ವಿಂಟಾಲ್', text)
+    text = re.sub(r'\b1\s*Quintal\b', 'ಒಂದು ಕ್ವಿಂಟಾಲ್', text, flags=re.IGNORECASE)
+
+    def _repl(match):
+        raw = match.group(0).replace(",", "")
+        try:
+            val = int(raw)
+            return number_to_kannada_words(val)
+        except ValueError:
+            return match.group(0)
+
+    # Convert comma-separated or plain digits
+    return re.sub(r'\b\d+(?:,\d+)*\b', _repl, text)
+
+
+
 
 def is_kannada(text: str) -> bool:
     """Checks if text contains Kannada Unicode characters."""
@@ -116,11 +291,28 @@ def classify_intent(query: str) -> str:
     if any(k in q for k in out_of_scope_keywords):
         return "OUT_OF_SCOPE"
 
-    has_price_kw = any(w in q for w in ["price", "rate", "mandi", "apmc", "modal", "ಬೆಲೆ", "ದರ", "ಮಾರುಕಟ್ಟೆ", "ಕ್ವಿಂಟಾಲ್", "ಖರೀದಿ"])
+    # Government schemes, subsidies, loans, certificates
+    has_scheme_kw = any(w in q for w in [
+        "ಯೋಜನೆ", "ಸಬ್ಸಿಡಿ", "ಪಿಎಂ ಕಿಸಾನ್", "pm kisan", "ವಿಮೆ", "ಪಹಣಿ", "ಆರ್‌ಟಿಸಿ",
+        "ಫ್ರೂಟ್ಸ್", "ಗಂಗಾ ಕಲ್ಯಾಣ", "ಸಾಲ", "ಕೆಸಿಸಿ", "kcc", "subsidy", "scheme", "insurance"
+    ])
+
+    # Price keywords (careful with 'ದರ' so it doesn't match 'ಬರದಿದ್ದರೆ')
+    has_dara = bool(re.search(r"(^|\s)ದರ(\s|[.,!?]|$)", q)) or "ದರ ಏನು" in q or "ದರ ಎಷ್ಟು" in q or "ಮಾರುಕಟ್ಟೆ ದರ" in q
+    has_price_kw = (
+        any(w in q for w in ["price", "rate", "mandi", "apmc", "modal", "ಬೆಲೆ", "ಮಾರುಕಟ್ಟೆ", "ಕ್ವಿಂಟಾಲ್", "ಖರೀದಿ", "ರೇಟ್"])
+        or has_dara
+    ) and not has_scheme_kw
+
     has_profit_kw = any(w in q for w in ["profit", "cost", "revenue", "return", "roi", "economics", "ಖರ್ಚು", "ಲಾಭ", "ಆದಾಯ", "ಬಂಡವಾಳ", "ವೆಚ್ಚ"])
     has_weather_kw = any(w in q for w in ["weather", "rain", "rainfall", "forecast", "temperature", "humidity", "spray", "ಹವಾಮಾನ", "ಮಳೆ", "ಬಿಸಿಲು", "ಸಿಂಪಡ"])
-    has_agronomy_kw = any(w in q for w in ["fertilizer", "npk", "disease", "pest", "wilt", "blast", "seed", "variety", "spacing", "sow", "ಗೊಬ್ಬರ", "ರೋಗ", "ಔಷಧ", "ತಳಿ", "ಬಿತ್ತನೆ", "ಕೀಟ", "ಶಿಫಾರಸು"])
+    has_agronomy_kw = any(w in q for w in [
+        "fertilizer", "npk", "disease", "pest", "wilt", "blast", "seed", "variety", "spacing", "sow",
+        "ಗೊಬ್ಬರ", "ರೋಗ", "ಔಷಧ", "ತಳಿ", "ಬಿತ್ತನೆ", "ಕೀಟ", "ಶಿಫಾರಸು", "ಯೂರಿಯಾ", "ಲಸಿಕೆ", "ಜೀವಾಮೃತ", "ಕಳೆ"
+    ])
 
+    if has_scheme_kw:
+        return "GENERAL_AGRICULTURE"
     if has_price_kw and (has_agronomy_kw or has_profit_kw):
         return "HYBRID"
     if has_profit_kw:
@@ -225,11 +417,11 @@ class AgriPulseAssistant:
                 prompt_injection_flagged=False
             )
 
-        # 5. Execute Backend Tools
+        # 5. Execute Backend Tools strictly based on classified intent
         tool_outputs: Dict[str, Any] = {}
 
         if intent in ["MARKET_PRICE", "HYBRID"] and detected_crop:
-            price_quote = self.tools.get_market_price(detected_crop, district)
+            price_quote = self.tools.get_market_price_with_highest(detected_crop, district)
             if price_quote:
                 tool_outputs["market_quote"] = price_quote
 
@@ -246,10 +438,17 @@ class AgriPulseAssistant:
             if weather:
                 tool_outputs["weather_context"] = weather
 
-        # 6. Retrieve Supporting Documents from Curated Knowledge Base
-        citations, has_evidence = self.retriever.retrieve(query, top_k=3, target_crop=detected_crop)
+        # 6. Retrieve Supporting Documents strictly matching intent
+        # When user asks for price, DO NOT retrieve or dump agronomic planting/fertilizer guides!
+        citations: List[Citation] = []
+        if intent in ["AGRONOMY_ADVICE", "HYBRID", "GENERAL_AGRICULTURE"]:
+            citations, _ = self.retriever.retrieve(query, top_k=3, target_crop=detected_crop)
+        elif intent == "MARKET_PRICE":
+            # For market price, retrieve quality/grading standards citations only if applicable
+            all_cits, _ = self.retriever.retrieve("APMC market standards quality grading", top_k=2, target_crop=detected_crop)
+            citations = [c for c in all_cits if any(w in c.document_title for w in ["APMC", "Grading", "Quality", "Market"])]
 
-        # If no citations and no tool output -> Abstain
+        # If no citations and no tool output -> Abstain safely
         if not citations and not tool_outputs:
             no_ev_kn = (
                 "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪ್ರಶ್ನೆಗೆ ಸಂಬಂಧಿಸಿದಂತೆ ನಮ್ಮ ಬಳಿ ಅಧಿಕೃತ ಐಸಿಎಆರ್ (ICAR) ಅಥವಾ ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯದ "
@@ -275,7 +474,7 @@ class AgriPulseAssistant:
             )
 
         # 7. Synthesize Response with Conversational Multi-turn Context
-        answer_text, mode = await self._synthesize_grounded_response(
+        answer_text, mode, spoken_answer = await self._synthesize_grounded_response(
             query=query,
             lang=lang,
             intent=intent,
@@ -304,7 +503,8 @@ class AgriPulseAssistant:
             tool_outputs=tool_outputs if tool_outputs else None,
             assumptions_and_limitations=assumptions,
             abstention=False,
-            prompt_injection_flagged=False
+            prompt_injection_flagged=False,
+            spoken_answer=spoken_answer
         )
 
     async def _synthesize_grounded_response(
@@ -317,10 +517,10 @@ class AgriPulseAssistant:
         citations: List[Citation],
         tool_outputs: Dict[str, Any],
         conversation_history: Optional[List[Dict[str, str]]] = None
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, str]:
         """
-        Synthesizes the final answer text using configured LLM when available,
-        with strict deterministic fallback to authenticated excerpts and multi-turn context.
+        Synthesizes the final answer text and a pure, fluent spoken audio summary.
+        Answers ONLY what was asked, without dumping irrelevant weather or cultivation info.
         """
         # If LLM API key is present, attempt grounded LLM synthesis
         if settings.LLM_API_KEY:
@@ -335,13 +535,17 @@ class AgriPulseAssistant:
                     conversation_history=conversation_history
                 )
                 if llm_response and len(llm_response.strip()) > 20:
-                    return llm_response.strip(), "llm_synthesized"
+                    spoken_text = self._extract_clean_speech_text(llm_response.strip(), lang)
+                    if lang == "kn" and spoken_text:
+                        spoken_text = convert_all_numbers_to_kannada(spoken_text)
+                    return llm_response.strip(), "llm_synthesized", spoken_text
             except Exception:
                 # Graceful zero-failure fallback
                 pass
 
         mode = "retrieval_excerpt_fallback"
         sections: List[str] = []
+        spoken_text = ""
 
         # Multi-turn contextual continuity note
         if conversation_history and len(conversation_history) > 0:
@@ -350,32 +554,139 @@ class AgriPulseAssistant:
             else:
                 sections.append(f"💬 **In connection with our previous discussion ({detected_crop or 'crop'} • {district} District):**")
 
-        # Numerical tool outputs section
-        if "market_quote" in tool_outputs:
+        # 1. MARKET PRICE INTENT: Focus 100% on 1 Quintal Price and Nearest Highest Market
+        if intent == "MARKET_PRICE" and "market_quote" in tool_outputs:
             q = tool_outputs["market_quote"]
+            highest = q.get("highest_market")
+            other_mkts = q.get("other_markets", [])
+
             if lang == "kn":
+                crop_kn = ENGLISH_TO_KANNADA_CROP.get(q['commodity'], q['commodity'])
+                dist_kn = ENGLISH_TO_KANNADA_DISTRICT.get(q['district'], q['district'])
+                mkt_kn = to_kannada_market_name(q['market_yard'])
+
+                modal_kn = number_to_kannada_words(int(q['modal_price_inr_per_qtl']))
+                min_kn = number_to_kannada_words(int(q['min_price_inr_per_qtl']))
+                max_kn = number_to_kannada_words(int(q['max_price_inr_per_qtl']))
+
+                spoken_parts = [
+                    f"{dist_kn} ಮಾರುಕಟ್ಟೆಯಲ್ಲಿ ಒಂದು ಕ್ವಿಂಟಾಲ್ {crop_kn} ಮಾದರಿ ಬೆಲೆ {modal_kn} ರೂಪಾಯಿ ಇದೆ. ಕನಿಷ್ಠ ಬೆಲೆ {min_kn} ರೂಪಾಯಿ ಮತ್ತು ಗರಿಷ್ಠ ಬೆಲೆ {max_kn} ರೂಪಾಯಿ ಆಗಿದೆ."
+                ]
+                if highest and highest["market_yard"] != q["market_yard"]:
+                    high_mkt_kn = to_kannada_market_name(highest['market_yard'])
+                    high_max_kn = number_to_kannada_words(int(highest['max_price']))
+                    spoken_parts.append(
+                        f"ಕರ್ನಾಟಕದಲ್ಲೇ ಅತ್ಯಂತ ಹೆಚ್ಚು ದರ {high_mkt_kn} ಮಂಡಿಯಲ್ಲಿದ್ದು, ಗರಿಷ್ಠ ಕ್ವಿಂಟಾಲ್‌ಗೆ {high_max_kn} ರೂಪಾಯಿ ಇದೆ."
+                    )
+                spoken_text = convert_all_numbers_to_kannada(" ".join(spoken_parts))
+
+
                 sections.append(
-                    f"📊 **ಅಧಿಕೃತ ಮಾರುಕಟ್ಟೆ ದರ (ಎಪಿಎಂಸಿ ದತ್ತಾಂಶ):**\n"
-                    f"• ಉತ್ಪನ್ನ: **{q['commodity']}** | ಮಾರುಕಟ್ಟೆ: **{q['market_yard']}**\n"
-                    f"• ಮಾದರಿ ದರ (Modal): **₹{q['modal_price_inr_per_qtl']} / ಕ್ವಿಂಟಾಲ್**\n"
-                    f"• ಕನಿಷ್ಠ - ಗರಿಷ್ಠ ದರ: ₹{q['min_price_inr_per_qtl']} – ₹{q['max_price_inr_per_qtl']}\n"
-                    f"• ದಿನಾಂಕ: {q['quote_date']} (ಮೂಲ: {q['source_provenance']})"
-                )
-            else:
-                sections.append(
-                    f"📊 **Verified APMC Market Prices (Official Data):**\n"
-                    f"• Commodity: **{q['commodity']}** | Market Yard: **{q['market_yard']}**\n"
-                    f"• Modal Price: **₹{q['modal_price_inr_per_qtl']} / quintal**\n"
-                    f"• Price Range: ₹{q['min_price_inr_per_qtl']} – ₹{q['max_price_inr_per_qtl']}\n"
-                    f"• Date: {q['quote_date']} (Source: {q['source_provenance']})"
+                    f"🏷️ **1 ಕ್ವಿಂಟಾಲ್ {crop_kn} ಅಧಿಕೃತ ಮಾರುಕಟ್ಟೆ ದರ ({mkt_kn}):**\n"
+                    f"• **1 ಕ್ವಿಂಟಾಲ್ ಸರಾಸರಿ ಮಾದರಿ ದರ (Modal Price):** **₹{q['modal_price_inr_per_qtl']:,}**\n"
+                    f"• ದರ ಶ್ರೇಣಿ (ಕನಿಷ್ಠ – ಗರಿಷ್ಠ): ₹{q['min_price_inr_per_qtl']:,} – ₹{q['max_price_inr_per_qtl']:,}\n"
+                    f"• ದಿನಾಂಕ: {q['quote_date']} (ಮೂಲ: Agmarknet ಕರ್ನಾಟಕ / APMC ಅಧಿಕೃತ ದಾಖಲೆಗಳು)"
                 )
 
-        if "unit_economics" in tool_outputs:
-            e = tool_outputs["unit_economics"]
+                if highest and highest["market_yard"] != q["market_yard"]:
+                    high_mkt_kn = to_kannada_market_name(highest['market_yard'])
+                    high_dist_kn = ENGLISH_TO_KANNADA_DISTRICT.get(highest['district'], highest['district'])
+                    diff = highest["modal_price"] - q["modal_price_inr_per_qtl"]
+                    diff_str = f"+₹{diff:,}" if diff > 0 else f"₹{diff:,}"
+                    sections.append(
+                        f"🏆 **ಅತ್ಯಧಿಕ ದರವಿರುವ ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆ (Highest Rate Mandi):**\n"
+                        f"• ಮಾರುಕಟ್ಟೆ: **{high_mkt_kn}** ({high_dist_kn})\n"
+                        f"• ಗರಿಷ್ಠ ದರ: **₹{highest['max_price']:,} / ಕ್ವಿಂಟಾಲ್** (ಮಾದರಿ ದರ: ₹{highest['modal_price']:,})\n"
+                        f"*(ನಿಮ್ಮ ಮಾರುಕಟ್ಟೆಗೆ ಹೋಲಿಸಿದರೆ ಇಲ್ಲಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ {diff_str} ವ್ಯತ್ಯಾಸವಿದೆ)*"
+                    )
+
+                if other_mkts:
+                    other_lines = []
+                    for om in other_mkts[:4]:
+                        if om["market_yard"] != q["market_yard"]:
+                            om_mkt_kn = to_kannada_market_name(om['market_yard'])
+                            other_lines.append(f"• **{om_mkt_kn}**: ₹{om['modal_price']:,} / ಕ್ವಿಂಟಾಲ್ (ಶ್ರೇಣಿ: ₹{om['min_price']:,} – ₹{om['max_price']:,})")
+                    if other_lines:
+                        sections.append(f"📍 **ಕರ್ನಾಟಕದ ಇತರ ಪ್ರಮುಖ ಮಾರುಕಟ್ಟೆಗಳಲ್ಲಿ 1 ಕ್ವಿಂಟಾಲ್ ದರ:**\n" + "\n".join(other_lines))
+
+            else:
+                spoken_parts = [
+                    f"The modal price for 1 quintal of {q['commodity']} in {q['market_yard']} is {q['modal_price_inr_per_qtl']} rupees."
+                ]
+                if highest and highest["market_yard"] != q["market_yard"]:
+                    spoken_parts.append(
+                        f"The highest rate across Karnataka is in {highest['market_yard']} at {highest['max_price']} rupees per quintal."
+                    )
+                spoken_text = " ".join(spoken_parts)
+
+                sections.append(
+                    f"🏷️ **Official 1 Quintal Price for {q['commodity']} ({q['market_yard']}):**\n"
+                    f"• **1 Quintal Modal Price:** **₹{q['modal_price_inr_per_qtl']:,}**\n"
+                    f"• Price Range (Min – Max): ₹{q['min_price_inr_per_qtl']:,} – ₹{q['max_price_inr_per_qtl']:,}\n"
+                    f"• Date: {q['quote_date']} (Source: Agmarknet Karnataka APMC Records)"
+                )
+                if highest and highest["market_yard"] != q["market_yard"]:
+                    sections.append(
+                        f"🏆 **Highest Rate Market in Karnataka:**\n"
+                        f"• Market: **{highest['market_yard']}** ({highest['district']})\n"
+                        f"• Modal Price: **₹{highest['modal_price']:,} / quintal** (Max: ₹{highest['max_price']:,})"
+                    )
+
+            final_answer = "\n\n".join(sections)
+            return final_answer, mode, spoken_text
+
+        # 2. WEATHER ADVISORY INTENT: Focus 100% on weather conditions and spray advisories
+        elif intent == "WEATHER_ADVISORY" and "weather_context" in tool_outputs:
+            w = tool_outputs["weather_context"]
+            dist_kn = ENGLISH_TO_KANNADA_DISTRICT.get(w['district'], w['district'])
             if lang == "kn":
+                spoken_text = (
+                    f"{dist_kn} ಜಿಲ್ಲೆಯಲ್ಲಿ ಇಂದಿನ ತಾಪಮಾನ {w['temperature_c']} ಡಿಗ್ರಿ ಸೆಲ್ಸಿಯಸ್, "
+                    f"ಗಾಳಿಯ ತೇವಾಂಶ ಶೇಕಡಾ {w['relative_humidity_pct']}, ಮತ್ತು ಮಳೆ {w['precipitation_mm']} ಮಿಲಿಮೀಟರ್ ಇರಲಿದೆ. "
+                    f"ಹವಾಮಾನ: {w['weather_description']}."
+                )
+                sections.append(
+                    f"🌤️ **ಲೈವ್ ಹವಾಮಾನ ಮುನ್ನೋಟ ({dist_kn}):**\n"
+                    f"• ತಾಪಮಾನ: **{w['temperature_c']}°C** | ತೇವಾಂಶ: **{w['relative_humidity_pct']}%** | ಮಳೆ: **{w['precipitation_mm']} mm**\n"
+                    f"• ಮುನ್ಸೂಚನೆ: **{w['weather_description']}** (ಮೂಲ: {w['provider']})"
+                )
+                if w.get("operational_advisories"):
+                    adv_lines = []
+                    for adv in w["operational_advisories"]:
+                        if isinstance(adv, dict):
+                            title = adv.get("title") or adv.get("action") or ""
+                            details = adv.get("details") or adv.get("recommendation") or ""
+                            if title and details:
+                                adv_lines.append(f"• {title}: {details}")
+                            elif details:
+                                adv_lines.append(f"• {details}")
+                        elif isinstance(adv, str) and adv.strip():
+                            adv_lines.append(f"• {adv}")
+                    if adv_lines:
+                        sections.append("📋 **ಕೃಷಿ ಹವಾಮಾನ ಸಲಹೆಗಳು:**\n" + "\n".join(adv_lines[:3]))
+            else:
+                spoken_text = (
+                    f"Current temperature in {w['district']} is {w['temperature_c']} degrees Celsius with {w['weather_description']}."
+                )
+                sections.append(
+                    f"🌤️ **Live Weather Context ({w['district']}):**\n"
+                    f"• Temp: **{w['temperature_c']}°C** | Humidity: **{w['relative_humidity_pct']}%** | Rainfall: **{w['precipitation_mm']} mm**\n"
+                    f"• Conditions: **{w['weather_description']}** (Provider: {w['provider']})"
+                )
+            final_answer = "\n\n".join(sections)
+            return final_answer, mode, spoken_text
+
+        # 3. PROFIT ECONOMICS INTENT: Focus 100% on unit economics, costs, and net profit
+        elif intent == "PROFIT_ECONOMICS" and "unit_economics" in tool_outputs:
+            e = tool_outputs["unit_economics"]
+            crop_kn = ENGLISH_TO_KANNADA_CROP.get(e['crop_name'], e['crop_name'])
+            if lang == "kn":
+                spoken_text = (
+                    f"{crop_kn} ಬೆಳೆಗೆ {e['land_area_acres']} ಎಕರೆಗೆ ಅಂದಾಜು ನಿವ್ವಳ ಲಾಭ {e['expected_net_profit_inr']} ರೂಪಾಯಿ ಹಾಗೂ ಒಟ್ಟು ಕೃಷಿ ವೆಚ್ಚ {e['total_cultivation_cost_inr']} ರೂಪಾಯಿ ಆಗುತ್ತದೆ."
+                )
                 sections.append(
                     f"💰 **ಕೃಷಿ ಆರ್ಥಿಕತೆ ಮತ್ತು ಅಂದಾಜು ಲಾಭ ({e['land_area_acres']} ಎಕರೆಗೆ):**\n"
-                    f"• ಅಂದಾಜು ಇಳುವರಿ: **{e['total_production_qtl']} ಕ್ವಿಂಟಾಲ್** ({e['expected_yield_qtl_per_acre']} ಕ್ವಿಂ/ಎಕರೆ)\n"
+                    f"• ಬೆಳೆ: **{crop_kn}** | ಅಂದಾಜು ಇಳುವರಿ: **{e['total_production_qtl']} ಕ್ವಿಂಟಾಲ್** ({e['expected_yield_qtl_per_acre']} ಕ್ವಿಂ/ಎಕರೆ)\n"
                     f"• ಒಟ್ಟು ಕೃಷಿ ವೆಚ್ಚ: **₹{e['total_cultivation_cost_inr']:,}** (ಎಕರೆಗೆ ₹{e['cost_per_acre_inr']:,})\n"
                     f"• ಒಟ್ಟು ಆದಾಯ (Gross Revenue): **₹{e['gross_revenue_inr']:,}** (@ ₹{e['assumed_modal_price_per_qtl_inr']}/ಕ್ವಿಂಟಾಲ್)\n"
                     f"• ಅಂದಾಜು ನಿವ್ವಳ ಲಾಭ (Net Profit): **₹{e['expected_net_profit_inr']:,}**\n"
@@ -383,6 +694,9 @@ class AgriPulseAssistant:
                     f"*(ಗಮನಿಸಿ: {e['formula_applied']}; ಆಧಾರ: {e['official_cost_source']})*"
                 )
             else:
+                spoken_text = (
+                    f"For {e['crop_name']} on {e['land_area_acres']} acre, expected net profit is {e['expected_net_profit_inr']} rupees."
+                )
                 sections.append(
                     f"💰 **Farm Unit Economics & Profit Calculation ({e['land_area_acres']} acre):**\n"
                     f"• Expected Total Production: **{e['total_production_qtl']} quintals** ({e['expected_yield_qtl_per_acre']} qtl/acre)\n"
@@ -392,43 +706,61 @@ class AgriPulseAssistant:
                     f"• Return on Investment (ROI): **{e['return_on_investment_pct']}%**\n"
                     f"*(Applied formula: {e['formula_applied']}; Source: {e['official_cost_source']})*"
                 )
+            final_answer = "\n\n".join(sections)
+            return final_answer, mode, spoken_text
 
-        if "weather_context" in tool_outputs:
-            w = tool_outputs["weather_context"]
-            if lang == "kn":
-                sections.append(
-                    f"🌤️ **ಲೈವ್ ಹವಾಮಾನ ಮುನ್ನೋಟ ({w['district']}):**\n"
-                    f"• ತಾಪಮಾನ: {w['temperature_c']}°C | ತೇವಾಂಶ: {w['relative_humidity_pct']}% | ಮಳೆ: {w['precipitation_mm']} mm\n"
-                    f"• ಮುನ್ಸೂಚನೆ: {w['weather_description']} (ಮೂಲ: {w['provider']})"
-                )
-            else:
-                sections.append(
-                    f"🌤️ **Live Weather Context ({w['district']}):**\n"
-                    f"• Temp: {w['temperature_c']}°C | Humidity: {w['relative_humidity_pct']}% | Rainfall: {w['precipitation_mm']} mm\n"
-                    f"• Conditions: {w['weather_description']} (Provider: {w['provider']})"
-                )
+        # 4. AGRONOMY ADVICE OR HYBRID: Package of practices guidelines with official citations
+        else:
+            if citations:
+                if lang == "kn":
+                    sections.append("📚 **ಅಧಿಕೃತ ಕೃಷಿ ಮಾರ್ಗದರ್ಶಿ ಮತ್ತು ಸಂಶೋಧನಾ ದಾಖಲೆಗಳು:**")
+                    clean_answers = []
+                    for idx, cit in enumerate(citations, 1):
+                        exc = cit.excerpt
+                        sections.append(
+                            f"**{idx}. {cit.document_title}** ({cit.issuer})\n"
+                            f"> {exc}\n"
+                            f"*ವಿಭಾಗ: {cit.section} | ದಿನಾಂಕ: {cit.publication_date}*"
+                        )
+                        if "ಅಧಿಕೃತ ಕೃಷಿ ಉತ್ತರ:" in exc:
+                            ans_part = exc.split("ಅಧಿಕೃತ ಕೃಷಿ ಉತ್ತರ:")[-1].strip()
+                            clean_answers.append(ans_part)
+                        else:
+                            clean_answers.append(exc)
+                    spoken_text = clean_answers[0] if clean_answers else ""
+                    spoken_text = re.sub(r"[\*#_>`•]", "", spoken_text)
+                else:
+                    sections.append("📚 **Official Package of Practices & Scientific Excerpts:**")
+                    clean_answers = []
+                    for idx, cit in enumerate(citations, 1):
+                        exc = cit.excerpt
+                        sections.append(
+                            f"**{idx}. {cit.document_title}** ({cit.issuer})\n"
+                            f"> {exc}\n"
+                            f"*Section: {cit.section} | Date: {cit.publication_date}*"
+                        )
+                        clean_answers.append(exc)
+                    spoken_text = clean_answers[0] if clean_answers else ""
+                    spoken_text = re.sub(r"[\*#_>`•]", "", spoken_text)
 
-        # Document excerpts section
-        if citations:
-            if lang == "kn":
-                sections.append("📚 **ಅಧಿಕೃತ ಕೃಷಿ ಮಾರ್ಗದರ್ಶಿ ಮತ್ತು ಸಂಶೋಧನಾ ದಾಖಲೆಗಳು:**")
-                for idx, cit in enumerate(citations, 1):
-                    sections.append(
-                        f"**{idx}. {cit.document_title}** ({cit.issuer})\n"
-                        f"> {cit.excerpt}\n"
-                        f"*ವಿಭಾಗ: {cit.section} | ದಿನಾಂಕ: {cit.publication_date}*"
-                    )
-            else:
-                sections.append("📚 **Official Package of Practices & Scientific Excerpts:**")
-                for idx, cit in enumerate(citations, 1):
-                    sections.append(
-                        f"**{idx}. {cit.document_title}** ({cit.issuer})\n"
-                        f"> {cit.excerpt}\n"
-                        f"*Section: {cit.section} | Date: {cit.publication_date}*"
-                    )
+            final_answer = "\n\n".join(sections)
+            if lang == "kn" and spoken_text:
+                spoken_text = convert_all_numbers_to_kannada(spoken_text)
+            return final_answer, mode, spoken_text
 
-        final_answer = "\n\n".join(sections)
-        return final_answer, mode
+
+    def _extract_clean_speech_text(self, text: str, lang: str) -> str:
+        """Strips markdown, bullets, and metadata so speech audio sounds natural."""
+        # Remove bold, italics, bullets, headers
+        cleaned = re.sub(r"\*\*|\*|#|>|•|`", "", text)
+        lines = [line.strip() for line in cleaned.split("\n") if line.strip()]
+        # Filter out lines that look like citations or metadata
+        speech_lines = [
+            l for l in lines
+            if not l.startswith("Source:") and not l.startswith("ವಿಭಾಗ:") and not l.startswith("ದಿನಾಂಕ:")
+        ]
+        res = " ".join(speech_lines[:4])
+        return re.sub(r"\s+", " ", res).strip()
 
     async def _call_llm(
         self,
@@ -446,19 +778,32 @@ class AgriPulseAssistant:
         system_prompt = (
             "You are AgriPulse AI, an expert, trustworthy agricultural decision support system for Karnataka farmers.\n"
             "CRITICAL INSTRUCTIONS:\n"
-            "1. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE KANNADA.\n"
-            "2. Never hallucinate or invent prices, yields, or profits. Use ONLY the provided tool numbers and ICAR facts.\n"
-            "3. Ground your agronomic recommendations strictly on the provided official excerpts and citations.\n"
-            "4. Structure your response clearly with helpful bullet points.\n"
+            "1. Answer ONLY what the user explicitly asks. Never dump irrelevant information!\n"
+            "   - If the user asks for market price/rates, answer ONLY the 1 quintal price in their market and compare the highest rate across Karnataka mandis. DO NOT discuss cultivation, planting, seeds, or weather.\n"
+            "   - If the user asks about weather, answer ONLY weather and rain advisories. DO NOT discuss prices or costs.\n"
+            "   - If the user asks about agronomy/fertilizer/disease, answer ONLY the package of practices and treatment.\n"
+            "2. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE KANNADA.\n"
+            "3. Never hallucinate or invent prices, yields, or profits. Use ONLY the provided tool numbers and ICAR facts.\n"
+            "4. Structure your response clearly with helpful bullet points and keep it concise and farmer-friendly.\n"
             "5. If previous conversation turns are present, maintain multi-turn continuity and directly connect your answer to the previous questions and answers."
         )
 
         context_parts = []
-        if tool_outputs:
-            context_parts.append(f"VERIFIED TOOL DATA: {tool_outputs}")
-        if citations:
-            excerpts_text = "\n".join([f"- [{c.issuer} - {c.document_title}]: {c.excerpt}" for c in citations])
-            context_parts.append(f"OFFICIAL GUIDELINE EXCERPTS:\n{excerpts_text}")
+        if intent == "MARKET_PRICE":
+            if "market_quote" in tool_outputs:
+                context_parts.append(f"VERIFIED APMC MARKET PRICES & HIGHEST MANDI: {tool_outputs['market_quote']}")
+        elif intent == "WEATHER_ADVISORY":
+            if "weather_context" in tool_outputs:
+                context_parts.append(f"LIVE WEATHER OBSERVATIONS: {tool_outputs['weather_context']}")
+        elif intent == "PROFIT_ECONOMICS":
+            if "unit_economics" in tool_outputs:
+                context_parts.append(f"UNIT ECONOMICS & COSTS: {tool_outputs['unit_economics']}")
+        else:
+            if tool_outputs:
+                context_parts.append(f"VERIFIED TOOL DATA: {tool_outputs}")
+            if citations:
+                excerpts_text = "\n".join([f"- [{c.issuer} - {c.document_title}]: {c.excerpt}" for c in citations])
+                context_parts.append(f"OFFICIAL GUIDELINE EXCERPTS:\n{excerpts_text}")
 
         user_content = (
             f"User Question: {query}\n"
@@ -493,7 +838,7 @@ class AgriPulseAssistant:
         }
 
         endpoint = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
-        async with httpx.AsyncClient(timeout=4.0) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(4.0, connect=0.8)) as client:
             resp = await client.post(endpoint, json=payload, headers=headers)
             if resp.status_code == 200:
                 data = resp.json()

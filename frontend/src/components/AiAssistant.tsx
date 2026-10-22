@@ -18,6 +18,7 @@ import {
   Volume2,
   VolumeX,
   RotateCcw,
+  MapPin,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -36,6 +37,7 @@ interface ChatMessage {
   id: string;
   sender: 'user' | 'assistant';
   text: string;
+  spokenAnswer?: string;
   timestamp: string;
   mode?: string;
   citations?: Citation[];
@@ -45,9 +47,86 @@ interface ChatMessage {
   promptInjection?: boolean;
 }
 
-// Helper to strip markdown and symbols so speech is natural and fluent
+const KANNADA_NUM_WORDS: Record<number, string> = {
+  0: 'ಸೊನ್ನೆ', 1: 'ಒಂದು', 2: 'ಎರಡು', 3: 'ಮೂರು', 4: 'ನಾಲ್ಕು', 5: 'ಐದು',
+  6: 'ಆರು', 7: 'ಏಳು', 8: 'ಎಂಟು', 9: 'ಒಂಬತ್ತು', 10: 'ಹತ್ತು',
+  11: 'ಹನ್ನೊಂದು', 12: 'ಹನ್ನೆರಡು', 13: 'ಹದಿಮೂರು', 14: 'ಹದಿನಾಲ್ಕು', 15: 'ಹದಿನೈದು',
+  16: 'ಹದಿನಾರು', 17: 'ಹದಿನೇಳು', 18: 'ಹದಿನೆಂಟು', 19: 'ಹತ್ತೊಂಬತ್ತು', 20: 'ಇಪ್ಪತ್ತು',
+  21: 'ಇಪ್ಪತ್ತೊಂದು', 22: 'ಇಪ್ಪತ್ತೆರಡು', 23: 'ಇಪ್ಪತ್ತಮೂರು', 24: 'ಇಪ್ಪತ್ತನಾಲ್ಕು', 25: 'ಇಪ್ಪತ್ತೈದು',
+  26: 'ಇಪ್ಪತ್ತಾರು', 27: 'ಇಪ್ಪತ್ತೇಳು', 28: 'ಇಪ್ಪತ್ತೆಂಟು', 29: 'ಇಪ್ಪತ್ತೊಂಬತ್ತು', 30: 'ಮೂವತ್ತು',
+  31: 'ಮೂವತ್ತೊಂದು', 32: 'ಮೂವತ್ತೆರಡು', 33: 'ಮೂವತ್ತಮೂರು', 34: 'ಮೂವತ್ತನಾಲ್ಕು', 35: 'ಮೂವತ್ತೈದು',
+  36: 'ಮೂವತ್ತಾರು', 37: 'ಮೂವತ್ತೇಳು', 38: 'ಮೂವತ್ತೆಂಟು', 39: 'ಮೂವತ್ತೊಂಬತ್ತು', 40: 'ನಲವತ್ತು',
+  41: 'ನಲವತ್ತೊಂದು', 42: 'ನಲವತ್ತೆರಡು', 43: 'ನಲವತ್ತಮೂರು', 44: 'ನಲವತ್ತನಾಲ್ಕು', 45: 'ನಲವತ್ತೈದು',
+  46: 'ನಲವತ್ತಾರು', 47: 'ನಲವತ್ತೇಳು', 48: 'ನಲವತ್ತೆಂಟು', 49: 'ನಲವತ್ತೊಂಬತ್ತು', 50: 'ಐವತ್ತು',
+  51: 'ಐವತ್ತೊಂದು', 52: 'ಐವತ್ತೆರಡು', 53: 'ಐವತ್ತಮೂರು', 54: 'ಐವತ್ತನಾಲ್ಕು', 55: 'ಐವತ್ತೈದು',
+  56: 'ಐವತ್ತಾರು', 57: 'ಐವತ್ತೇಳು', 58: 'ಐವತ್ತೆಂಟು', 59: 'ಐವತ್ತೊಂಬತ್ತು', 60: 'ಅರವತ್ತು',
+  61: 'ಅರವತ್ತೊಂದು', 62: 'ಅರವತ್ತೆರಡು', 63: 'ಅರವತ್ತಮೂರು', 64: 'ಅರವತ್ತನಾಲ್ಕು', 65: 'ಅರವತ್ತೈದು',
+  66: 'ಅರವತ್ತಾರು', 67: 'ಅರವತ್ತೇಳು', 68: 'ಅರವತ್ತೆಂಟು', 69: 'ಅರವತ್ತೊಂಬತ್ತು', 70: 'ಎಪ್ಪತ್ತು',
+  71: 'ಎಪ್ಪತ್ತೊಂದು', 72: 'ಎಪ್ಪತ್ತೆರಡು', 73: 'ಎಪ್ಪತ್ತಮೂರು', 74: 'ಎಪ್ಪತ್ತನಾಲ್ಕು', 75: 'ಎಪ್ಪತ್ತೈದು',
+  76: 'ಎಪ್ಪತ್ತಾರು', 77: 'ಎಪ್ಪತ್ತೇಳು', 78: 'ಎಪ್ಪತ್ತೆಂಟು', 79: 'ಎಪ್ಪತ್ತೊಂಬತ್ತು', 80: 'ಎಂಬತ್ತು',
+  81: 'ಎಂಬತ್ತೊಂದು', 82: 'ಎಂಬತ್ತೆರಡು', 83: 'ಎಂಬತ್ತಮೂರು', 84: 'ಎಂಬತ್ತನಾಲ್ಕು', 85: 'ಎಂಬತ್ತೈದು',
+  86: 'ಎಂಬತ್ತಾರು', 87: 'ಎಂಬತ್ತೇಳು', 88: 'ಎಂಬತ್ತೆಂಟು', 89: 'ಎಂಬತ್ತೊಂಬತ್ತು', 90: 'ತೊಂಬತ್ತು',
+  91: 'ತೊಂಬತ್ತೊಂದು', 92: 'ತೊಂಬತ್ತೆರಡು', 93: 'ತೊಂಬತ್ತಮೂರು', 94: 'ತೊಂಬತ್ತನಾಲ್ಕು', 95: 'ತೊಂಬತ್ತೈದು',
+  96: 'ತೊಂಬತ್ತಾರು', 97: 'ತೊಂಬತ್ತೇಳು', 98: 'ತೊಂಬತ್ತೆಂಟು', 99: 'ತೊಂಬತ್ತೊಂಬತ್ತು',
+};
+
+const KANNADA_HUNDREDS_WORDS: Record<number, string> = {
+  1: 'ನೂರು', 2: 'ಇನ್ನೂರು', 3: 'ಮುನ್ನೂರು', 4: 'ನಾನೂರು',
+  5: 'ಐನೂರು', 6: 'ಆರೂರು', 7: 'ಏಳನೂರು', 8: 'ಎಂಟುನೂರು', 9: 'ಒಂಬೈನೂರು',
+};
+
+const anyKannadaChar = (str: string): boolean => /[\u0C80-\u0CFF]/.test(str);
+
+const numberToKannadaWords = (num: number): string => {
+  if (num in KANNADA_NUM_WORDS) return KANNADA_NUM_WORDS[num];
+  if (num < 0) return `ಮೈನಸ್ ${numberToKannadaWords(Math.abs(num))}`;
+
+  const parts: string[] = [];
+  const crores = Math.floor(num / 10000000);
+  let rem = num % 10000000;
+  if (crores > 0) parts.push(`${numberToKannadaWords(crores)} ಕೋಟಿ`);
+
+  const lakhs = Math.floor(rem / 100000);
+  rem = rem % 100000;
+  if (lakhs > 0) parts.push(`${numberToKannadaWords(lakhs)} ಲಕ್ಷ`);
+
+  const thousands = Math.floor(rem / 1000);
+  rem = rem % 1000;
+  if (thousands > 0) parts.push(`${numberToKannadaWords(thousands)} ಸಾವಿರ`);
+
+  const hundreds = Math.floor(rem / 100);
+  rem = rem % 100;
+  if (hundreds > 0) {
+    parts.push(KANNADA_HUNDREDS_WORDS[hundreds] || `${numberToKannadaWords(hundreds)} ನೂರು`);
+  }
+
+  if (rem > 0) {
+    parts.push(KANNADA_NUM_WORDS[rem] || String(rem));
+  }
+
+  return parts.join(' ');
+};
+
+const convertAllNumbersToKannada = (text: string): string => {
+  if (!text) return '';
+  const out = text
+    .replace(/\b1\s*ಕ್ವಿಂಟಾಲ್/g, 'ಒಂದು ಕ್ವಿಂಟಾಲ್')
+    .replace(/\b1\s*Quintal\b/gi, 'ಒಂದು ಕ್ವಿಂಟಾಲ್');
+
+  return out.replace(/\b\d+(?:,\d+)*\b/g, (match) => {
+    const raw = match.replace(/,/g, '');
+    const val = parseInt(raw, 10);
+    if (!isNaN(val)) {
+      return numberToKannadaWords(val);
+    }
+    return match;
+  });
+};
+
+// Helper to strip markdown, citations, and translate English words so speech is purely Kannada
 const cleanTextForSpeech = (text: string): string => {
-  return text
+  if (!text) return '';
+  let cleaned = text
     .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
     .replace(/\*(.*?)\*/g, '$1') // Italic
     .replace(/^#+\s+/gm, '') // Headers
@@ -55,12 +134,68 @@ const cleanTextForSpeech = (text: string): string => {
     .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
     .replace(/•/g, '') // Bullets
     .replace(/[#*_~`]/g, '') // Remaining symbols
+    // Pronounce ₹ or Rs as ರೂಪಾಯಿ
+    .replace(/₹\s*([0-9,]+)/g, '$1 ರೂಪಾಯಿ')
+    .replace(/Rs\.?\s*([0-9,]+)/gi, '$1 ರೂಪಾಯಿ')
+    .replace(/\bAgmarknet\b/gi, 'ಮಾರುಕಟ್ಟೆ')
+    .replace(/\bAPMC\b/gi, 'ಎಪಿಎಂಸಿ')
+    .replace(/\/ಕ್ವಿಂಟಾಲ್/g, ' ಕ್ವಿಂಟಾಲ್‌ಗೆ ')
+    .replace(/\/Quintal/gi, ' ಕ್ವಿಂಟಾಲ್‌ಗೆ ')
+    // Translate any English crop or district words into authentic Kannada
+    .replace(/\bOnion\b/gi, 'ಈರುಳ್ಳಿ')
+    .replace(/\bTomato\b/gi, 'ಟೊಮೆಟೊ')
+    .replace(/\bPotato\b/gi, 'ಆಲೂಗಡ್ಡೆ')
+    .replace(/\bMaize\b/gi, 'ಮೆಕ್ಕೆಜೋಳ')
+    .replace(/\bRagi\b/gi, 'ರಾಗಿ')
+    .replace(/\bCotton\b/gi, 'ಹತ್ತಿ')
+    .replace(/\bTur\b/gi, 'ತೊಗರಿ')
+    .replace(/\bChilli\b/gi, 'ಮೆಣಸಿನಕಾಯಿ')
+    .replace(/\bGroundnut\b/gi, 'ಶೇಂಗಾ')
+    .replace(/\bPaddy\b/gi, 'ಭತ್ತ')
+    .replace(/\bArecanut\b/gi, 'ಅಡಿಕೆ')
+    .replace(/\bGinger\b/gi, 'ಶುಂಠಿ')
+    .replace(/\bGarlic\b/gi, 'ಬೆಳ್ಳುಳ್ಳಿ')
+    .replace(/\bBanana\b/gi, 'ಬಾಳೆ')
+    .replace(/\bKolar\b/gi, 'ಕೋಲಾರ')
+    .replace(/\bBangalore\b/gi, 'ಬೆಂಗಳೂರು')
+    .replace(/\bBengaluru\b/gi, 'ಬೆಂಗಳೂರು')
+    .replace(/\bChitradurga\b/gi, 'ಚಿತ್ರದುರ್ಗ')
+    .replace(/\bBelagavi\b/gi, 'ಬೆಳಗಾವಿ')
+    .replace(/\bBelgaum\b/gi, 'ಬೆಳಗಾವಿ')
+    .replace(/\bDavanagere\b/gi, 'ದಾವಣಗೆರೆ')
+    .replace(/\bHaveri\b/gi, 'ಹಾವೇರಿ')
+    .replace(/\bHubballi\b/gi, 'ಹುಬ್ಬಳ್ಳಿ')
+    .replace(/\bHubli\b/gi, 'ಹುಬ್ಬಳ್ಳಿ')
+    .replace(/\bDharwad\b/gi, 'ಧಾರವಾಡ')
+    .replace(/\bMysuru\b/gi, 'ಮೈಸೂರು')
+    .replace(/\bMysore\b/gi, 'ಮೈಸೂರು')
+    .replace(/\bMandya\b/gi, 'ಮಂಡ್ಯ')
+    .replace(/\bTumakuru\b/gi, 'ತುಮಕೂರು')
+    .replace(/\bTumkur\b/gi, 'ತುಮಕೂರು')
+    .replace(/\bHassan\b/gi, 'ಹಾಸನ')
+    .replace(/\bModal Price\b/gi, 'ಮಾದರಿ ಬೆಲೆ')
+    .replace(/\bModal\b/gi, 'ಮಾದರಿ')
+    .replace(/\bPrice\b/gi, 'ಬೆಲೆ')
+    .replace(/\bRate\b/gi, 'ದರ')
+    .replace(/\bMandi\b/gi, 'ಮಂಡಿ')
+    .replace(/\bYard\b/gi, 'ಮಂಡಿ')
+    .replace(/\bMarket\b/gi, 'ಮಾರುಕಟ್ಟೆ')
+    .replace(/\bQuintal\b/gi, 'ಕ್ವಿಂಟಾಲ್')
+    .replace(/\bQtl\b/gi, 'ಕ್ವಿಂಟಾಲ್')
+    .replace(/\bMin\b/gi, 'ಕನಿಷ್ಠ')
+    .replace(/\bMax\b/gi, 'ಗರಿಷ್ಠ')
     .replace(/\s+/g, ' ')
     .trim();
+
+  // Convert all numbers into authentic Kannada words
+  if (anyKannadaChar(cleaned)) {
+    cleaned = convertAllNumbersToKannada(cleaned);
+  }
+  return cleaned;
 };
 
 export const AiAssistant: React.FC = () => {
-  const { t, language, profile, apiBase } = useApp();
+  const { t, language, profile, apiBase, detectLocationViaGps } = useApp();
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -70,6 +205,10 @@ export const AiAssistant: React.FC = () => {
         language === 'kn'
           ? 'ನಮಸ್ಕಾರ! ನಾನು ಅಗ್ರಿಪಲ್ಸ್ ಕೃಷಿ AI ಸಹಾಯಕ. ಐಸಿಎಆರ್ (ICAR), ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯಗಳ ಪ್ಯಾಕೇಜ್ ಆಫ್ ಪ್ರಾಕ್ಟೀಸಸ್ ಮತ್ತು ಎಪಿಎಂಸಿ ಮಂಡಿ ದತ್ತಾಂಶಗಳ ಆಧಾರದ ಮೇಲೆ ಮಾತ್ರ ನಾನು ನಿಖರವಾದ ಕೃಷಿ ಮಾಹಿತಿ ಮತ್ತು ಬೆಲೆಗಳನ್ನು ಒದಗಿಸುತ್ತೇನೆ. ಮೈಕ್ ಬಟನ್ ಒತ್ತಿ ಕನ್ನಡದಲ್ಲೇ ಮಾತನಾಡಬಹುದು!'
           : 'Welcome! I am the AgriPulse Agricultural AI Assistant. I provide factual farming guidance strictly grounded in official ICAR, Agricultural University Package of Practices, and APMC mandi records. You can also click the mic to speak in Kannada or English!',
+      spokenAnswer:
+        language === 'kn'
+          ? 'ನಮಸ್ಕಾರ! ನಾನು ಅಗ್ರಿಪಲ್ಸ್ ಕೃಷಿ AI ಸಹಾಯಕ. ಕೃಷಿ ಮಾಹಿತಿ ಮತ್ತು ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳಿಗಾಗಿ ಪ್ರಶ್ನೆ ಕೇಳಿ.'
+          : 'Welcome! I am the AgriPulse AI assistant. Ask any agricultural question or market price.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       mode: 'retrieval_excerpt_fallback',
       assumptions: t.assistant.unsupportedDisclaimer,
@@ -80,25 +219,65 @@ export const AiAssistant: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
 
+  // GPS Location Tracking State
+  const [gpsStatus, setGpsStatus] = useState<string | null>(null);
+  const [detectingGps, setDetectingGps] = useState(false);
+
   // Voice Input (STT) State
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [voiceLang, setVoiceLang] = useState<'kn' | 'en'>('kn'); // Default to Kannada!
   const recognitionRef = useRef<any>(null);
 
+  // Available Synthesis Voices
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return;
+    const updateVoices = () => {
+      const vList = window.speechSynthesis.getVoices();
+      setVoices(vList);
+    };
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+  }, []);
+
+  const handleDetectGps = async () => {
+    setDetectingGps(true);
+    setGpsStatus(null);
+    try {
+      const res = await detectLocationViaGps();
+      if (res.success && res.district) {
+        setGpsStatus(language === 'kn' ? `ಸ್ಥಳ: ${res.district}` : `Detected: ${res.district}`);
+      } else {
+        setGpsStatus(res.message);
+      }
+    } catch {
+      setGpsStatus('GPS error');
+    } finally {
+      setDetectingGps(false);
+      setTimeout(() => setGpsStatus(null), 4000);
+    }
+  };
+
   // Normalizes misheard English phonetics to authentic Kannada agricultural queries
   const normalizeVoiceTranscript = (raw: string, vLang: 'kn' | 'en'): string => {
     if (!raw) return '';
     if (vLang === 'kn') {
       const lower = raw.toLowerCase().trim();
+      if (
+        lower.includes('onion') ||
+        lower.includes('eerulli') ||
+        lower.includes('erulli') ||
+        lower.includes('irulli')
+      ) {
+        return 'ಈರುಳ್ಳಿ 1 ಕ್ವಿಂಟಾಲ್ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು ಮತ್ತು ಕರ್ನಾಟಕದಲ್ಲೇ ಅತ್ಯಂತ ಹೆಚ್ಚು ದರ ಎಲ್ಲಿದೆ?';
+      }
       if (lower.includes('yes tomato rated') || lower.includes('tomato rate') || lower.includes('tomato rated')) {
         return 'ಕೋಲಾರದಲ್ಲಿ ಟೊಮೆಟೊ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?';
       }
       if (lower.includes('ragi rate') || lower.includes('ragi price') || lower.includes('ragi bele')) {
         return 'ರಾಗಿ ಮಾರುಕಟ್ಟೆ ಮತ್ತು ಕನಿಷ್ಠ ಬೆಂಬಲ ಬೆಲೆ (MSP) ಎಷ್ಟು?';
-      }
-      if (lower.includes('onion rate') || lower.includes('eerulli')) {
-        return 'ಈರುಳ್ಳಿ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು?';
       }
       if (lower.includes('weather') || lower.includes('rain') || lower.includes('havamana')) {
         return 'ಇಂದಿನ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಏನು?';
@@ -113,6 +292,7 @@ export const AiAssistant: React.FC = () => {
   // Voice Output (TTS) State
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize Web Speech API for Voice Input
   useEffect(() => {
@@ -154,6 +334,11 @@ export const AiAssistant: React.FC = () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+        audioPlayerRef.current.src = '';
+        audioPlayerRef.current = null;
+      }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -177,41 +362,56 @@ export const AiAssistant: React.FC = () => {
     }
   };
 
-  // Text-to-Speech Handler
-  const speakMessage = (msgId: string, text: string) => {
-    if (!('speechSynthesis' in window)) return;
-
-    // If already speaking this message, stop it
-    if (currentlySpeakingId === msgId) {
-      window.speechSynthesis.cancel();
-      setCurrentlySpeakingId(null);
-      return;
+  const stopSpeaking = () => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.src = '';
+      audioPlayerRef.current = null;
     }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setCurrentlySpeakingId(null);
+  };
 
+  const fallbackSpeechSynthesis = (msgId: string, cleanText: string, isKn: boolean) => {
+    if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const cleanText = cleanTextForSpeech(text);
-    if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    const isKn = anyKannadaChar(cleanText) || language === 'kn';
     utterance.lang = isKn ? 'kn-IN' : 'en-IN';
-    utterance.rate = 0.95; // Slightly slower, clear pace for farmers
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
 
-    // Try finding an installed Kannada voice
-    const voices = window.speechSynthesis.getVoices();
-    const knVoice = voices.find((v) => v.lang.startsWith('kn') || v.name.includes('Kannada'));
-    if (knVoice) {
-      utterance.voice = knVoice;
+    const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    if (isKn) {
+      const knVoice = availableVoices.find(
+        (v) =>
+          v.lang.toLowerCase().startsWith('kn') ||
+          v.name.toLowerCase().includes('kannada') ||
+          v.name.toLowerCase().includes('kn-in')
+      );
+      if (knVoice) {
+        utterance.voice = knVoice;
+      }
+    } else {
+      const enVoice = availableVoices.find(
+        (v) =>
+          v.lang.toLowerCase().includes('en-in') ||
+          v.name.toLowerCase().includes('india') ||
+          v.lang.toLowerCase().startsWith('en')
+      );
+      if (enVoice) {
+        utterance.voice = enVoice;
+      }
     }
 
     utterance.onstart = () => {
       setCurrentlySpeakingId(msgId);
     };
-
     utterance.onend = () => {
       setCurrentlySpeakingId(null);
     };
-
     utterance.onerror = () => {
       setCurrentlySpeakingId(null);
     };
@@ -219,14 +419,56 @@ export const AiAssistant: React.FC = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const stopSpeaking = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setCurrentlySpeakingId(null);
+  // Text-to-Speech Handler
+  const speakMessage = (msgId: string, text: string, spokenText?: string) => {
+    // If already speaking this message, toggle off
+    if (currentlySpeakingId === msgId) {
+      stopSpeaking();
+      return;
     }
+
+    stopSpeaking();
+
+    // Prioritize clean spoken text provided by backend to avoid citations & English noise
+    const rawToSpeak = spokenText && spokenText.trim().length > 0 ? spokenText : text;
+    const cleanText = cleanTextForSpeech(rawToSpeak);
+    if (!cleanText) return;
+
+    const isKn = anyKannadaChar(cleanText) || language === 'kn' || voiceLang === 'kn';
+
+    // 1. PRIMARY: High-Fidelity Indic/Kannada Audio Stream from Backend
+    // Provides studio-quality native Kannada pronunciation and Kannada numbers
+    if (isKn) {
+      try {
+        const ttsUrl = `${apiBase}/assistant/tts?text=${encodeURIComponent(cleanText)}&lang=kn`;
+        const audio = new Audio(ttsUrl);
+        audioPlayerRef.current = audio;
+        setCurrentlySpeakingId(msgId);
+
+        audio.onended = () => {
+          setCurrentlySpeakingId(null);
+          audioPlayerRef.current = null;
+        };
+
+        audio.onerror = () => {
+          // Fall back to browser Web Speech API
+          audioPlayerRef.current = null;
+          fallbackSpeechSynthesis(msgId, cleanText, true);
+        };
+
+        audio.play().catch(() => {
+          fallbackSpeechSynthesis(msgId, cleanText, true);
+        });
+        return;
+      } catch {
+        // Fall back
+      }
+    }
+
+    // 2. English speech synthesis
+    fallbackSpeechSynthesis(msgId, cleanText, isKn);
   };
 
-  const anyKannadaChar = (str: string) => /[\u0C80-\u0CFF]/.test(str);
 
   const toggleCitations = (msgId: string) => {
     setExpandedCitations((prev) => ({
@@ -284,6 +526,7 @@ export const AiAssistant: React.FC = () => {
         id: assistantMsgId,
         sender: 'assistant',
         text: data.answer,
+        spokenAnswer: data.spoken_answer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mode: data.mode,
         citations: data.citations || [],
@@ -295,10 +538,10 @@ export const AiAssistant: React.FC = () => {
 
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // If Auto-read is enabled, speak the answer aloud automatically!
+      // If Auto-read is enabled, speak the answer aloud automatically using clean spokenAnswer!
       if (autoSpeak) {
         setTimeout(() => {
-          speakMessage(assistantMsgId, data.answer);
+          speakMessage(assistantMsgId, assistantMsg.text, assistantMsg.spokenAnswer);
         }, 300);
       }
     } catch {
@@ -312,13 +555,14 @@ export const AiAssistant: React.FC = () => {
         id: errorMsgId,
         sender: 'assistant',
         text: errorMsgText,
+        spokenAnswer: errorMsgText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         abstention: true,
       };
       setMessages((prev) => [...prev, errorMsg]);
 
       if (autoSpeak) {
-        setTimeout(() => speakMessage(errorMsgId, errorMsgText), 300);
+        setTimeout(() => speakMessage(errorMsgId, errorMsgText, errorMsgText), 300);
       }
     } finally {
       setLoading(false);
@@ -326,10 +570,14 @@ export const AiAssistant: React.FC = () => {
   };
 
   const quickPrompts = [
-    { text: t.assistant.prompt1, label: language === 'kn' ? 'ರಾಗಿ ರಸಗೊಬ್ಬರ (NPK)' : 'Ragi NPK Dosage' },
-    { text: t.assistant.prompt2, label: language === 'kn' ? 'ಕೋಲಾರ ಟೊಮೆಟೊ ಬೆಲೆ' : 'Tomato APMC Price' },
-    { text: t.assistant.prompt3, label: language === 'kn' ? 'ರಾಗಿ ಬೆಂಕಿ ರೋಗ' : 'Ragi Blast Control' },
-    { text: t.assistant.prompt4, label: language === 'kn' ? 'ಈರುಳ್ಳಿ 2 ಎಕರೆ ಲಾಭ' : 'Onion 2-Acre Profit' },
+    {
+      text: 'ಈರುಳ್ಳಿ 1 ಕ್ವಿಂಟಾಲ್ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಎಷ್ಟು ಮತ್ತು ಕರ್ನಾಟಕದಲ್ಲೇ ಅತ್ಯಂತ ಹೆಚ್ಚು ದರ ಎಲ್ಲಿದೆ?',
+      label: language === 'kn' ? '🧅 ಈರುಳ್ಳಿ 1 ಕ್ವಿಂಟಾಲ್ & ಗರಿಷ್ಠ ದರ' : '🧅 Onion 1 Qtl & Top APMC',
+    },
+    { text: t.assistant.prompt2, label: language === 'kn' ? '🍅 ಕೋಲಾರ ಟೊಮೆಟೊ ಬೆಲೆ' : 'Tomato APMC Price' },
+    { text: t.assistant.prompt1, label: language === 'kn' ? '🌾 ರಾಗಿ ರಸಗೊಬ್ಬರ (NPK)' : 'Ragi NPK Dosage' },
+    { text: t.assistant.prompt3, label: language === 'kn' ? '🛡️ ರಾಗಿ ಬೆಂಕಿ ರೋಗ' : 'Ragi Blast Control' },
+    { text: t.assistant.prompt4, label: language === 'kn' ? '💰 ಈರುಳ್ಳಿ 2 ಎಕರೆ ಲಾಭ' : 'Onion 2-Acre Profit' },
   ];
 
   return (
@@ -344,8 +592,20 @@ export const AiAssistant: React.FC = () => {
           <p className="page-subheading">{t.assistant.subtitle}</p>
         </div>
 
-        {/* Voice Controls: Auto-read toggle & Stop speaking */}
-        <div className="voice-controls-top" style={{ marginLeft: 'auto' }}>
+        {/* Live GPS location detector & Voice Controls */}
+        <div className="voice-controls-top" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <button
+            type="button"
+            onClick={handleDetectGps}
+            disabled={detectingGps}
+            className="btn-gps-detect"
+            title="ಲೈವ್ ಜಿಪಿಎಸ್ ಮೂಲಕ ನಿಮ್ಮ ಜಿಲ್ಲೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಿ (Auto-detect live GPS district)"
+          >
+            <MapPin size={15} />
+            <span>{detectingGps ? 'ಪತ್ತೆಹಚ್ಚಲಾಗುತ್ತಿದೆ...' : `📍 ${profile.district || 'ಸ್ಥಳ'}`}</span>
+          </button>
+          {gpsStatus && <span className="gps-status-pill">{gpsStatus}</span>}
+
           <button
             type="button"
             onClick={() => setAutoSpeak(!autoSpeak)}
@@ -355,8 +615,8 @@ export const AiAssistant: React.FC = () => {
             {autoSpeak ? <Volume2 size={16} /> : <VolumeX size={16} />}
             <span>
               {autoSpeak
-                ? language === 'kn' ? 'ಧ್ವನಿ: ಆನ್ (Voice ON)' : 'Audio: ON'
-                : language === 'kn' ? 'ಧ್ವನಿ: ಆಫ್ (Voice OFF)' : 'Audio: OFF'}
+                ? language === 'kn' ? 'ಧ್ವನಿ: ಆನ್' : 'Audio: ON'
+                : language === 'kn' ? 'ಧ್ವನಿ: ಆಫ್' : 'Audio: OFF'}
             </span>
           </button>
 
@@ -437,21 +697,21 @@ export const AiAssistant: React.FC = () => {
                     {!isUser && (
                       <button
                         type="button"
-                        onClick={() => speakMessage(msg.id, msg.text)}
+                        onClick={() => speakMessage(msg.id, msg.text, msg.spokenAnswer)}
                         className={`btn-bubble-audio ${isSpeakingThis ? 'speaking' : ''}`}
-                        title={isSpeakingThis ? 'ಆಡಿಯೋ ನಿಲ್ಲಿಸಿ (Stop Audio)' : 'ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ (Listen in Kannada)'}
+                        title={isSpeakingThis ? 'ಧ್ವನಿ ನಿಲ್ಲಿಸಿ' : 'ಕನ್ನಡ ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ'}
                       >
                         {isSpeakingThis ? (
                           <>
                             <div className="audio-wave-anim">
                               <span></span><span></span><span></span>
                             </div>
-                            <span>ನಿಲ್ಲಿಸಿ</span>
+                            <span>ಧ್ವನಿ ನಿಲ್ಲಿಸಿ</span>
                           </>
                         ) : (
                           <>
                             <Volume2 size={15} />
-                            <span>ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ (Listen)</span>
+                            <span>ಧ್ವನಿಯಲ್ಲಿ ಕೇಳಿ</span>
                           </>
                         )}
                       </button>
@@ -577,7 +837,7 @@ export const AiAssistant: React.FC = () => {
           <div className="listening-pulse-dot"></div>
           <span className="listening-text">
             {voiceLang === 'kn'
-              ? '🎤 ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ... ನಾವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ (Listening to Kannada speech... speak now)'
+              ? '🎤 ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ... ನಾವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ...'
               : '🎤 Listening to English speech... speak now'}
           </span>
           <button
@@ -585,7 +845,7 @@ export const AiAssistant: React.FC = () => {
             onClick={toggleListening}
             className="btn-cancel-listening"
           >
-            ಮುಗಿಸಿ (Done)
+            {voiceLang === 'kn' ? 'ಮುಗಿಸಿ' : 'Done'}
           </button>
         </div>
       )}
@@ -605,7 +865,7 @@ export const AiAssistant: React.FC = () => {
               type="button"
               onClick={toggleListening}
               className={`btn-mic-record ${isListening ? 'listening' : ''}`}
-              title="ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿ (Click to speak in Kannada)"
+              title={voiceLang === 'kn' ? 'ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿ' : 'Click to speak'}
             >
               {isListening ? <MicOff size={20} /> : <Mic size={20} />}
             </button>
@@ -619,7 +879,7 @@ export const AiAssistant: React.FC = () => {
                 }
               }}
               className={`btn-voice-lang-chip ${voiceLang === 'en' ? 'en' : ''}`}
-              title="ಧ್ವನಿ ಭಾಷೆ ಬದಲಿಸಿ / Toggle Voice Language"
+              title={voiceLang === 'kn' ? 'ಧ್ವನಿ ಭಾಷೆ ಬದಲಿಸಿ' : 'Toggle Voice Language'}
             >
               {voiceLang === 'kn' ? 'ಕನ್ನಡ (kn)' : 'English (en)'}
             </button>
@@ -633,10 +893,10 @@ export const AiAssistant: React.FC = () => {
           placeholder={
             isListening
               ? voiceLang === 'kn'
-                ? 'ಕೇಳಿಸಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ... ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ (Listening in Kannada...)'
+                ? 'ಕೇಳಿಸಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ... ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ...'
                 : 'Listening... speak now'
               : voiceLang === 'kn'
-              ? 'ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆ ಕೇಳಿ ಅಥವಾ ಮೈಕ್ ಬಳಸಿ (Ask question in Kannada or use mic)...'
+              ? 'ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆ ಕೇಳಿ ಅಥವಾ ಮೈಕ್ ಬಳಸಿ ಮಾತನಾಡಿ...'
               : t.assistant.inputPlaceholder
           }
           disabled={loading}
