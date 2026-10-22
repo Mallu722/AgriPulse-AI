@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Sprout,
   LayoutDashboard,
   UserCheck,
   TrendingUp,
@@ -58,7 +57,7 @@ export const Navbar: React.FC = () => {
         <div className="nav-container main-nav-content">
           <NavLink to="/dashboard" className="brand-logo" onClick={closeMenu}>
             <div className="brand-icon-box">
-              <Sprout size={28} strokeWidth={2.4} />
+              <img src="/agri-logo.svg" alt="AgriPulse AI Logo" className="brand-logo-img" />
             </div>
             <div className="brand-titles">
               <span className="brand-name">{t.appName}</span>

@@ -207,13 +207,25 @@ button {
 .brand-icon-box {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
-  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.3);
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.28);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-icon-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(22, 101, 52, 0.35);
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .brand-titles {
