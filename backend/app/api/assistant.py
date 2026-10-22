@@ -7,8 +7,12 @@ Endpoints:
 - GET /api/v1/assistant/evaluation-cases : Retrieve evaluation benchmarks (answerable, unanswerable, injection)
 """
 
+import re
+import httpx
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 from typing import List
+
 
 from app.schemas.assistant import (
     AssistantRequest,
@@ -16,7 +20,7 @@ from app.schemas.assistant import (
     KnowledgeSourceInfo,
     EvaluationTestCase,
 )
-from app.rag.assistant import AgriPulseAssistant
+from app.rag.assistant import AgriPulseAssistant, convert_all_numbers_to_kannada
 from app.rag.knowledge_base import get_all_sources_metadata
 
 router = APIRouter(prefix="/assistant")
@@ -163,3 +167,68 @@ def get_sources() -> List[KnowledgeSourceInfo]:
 )
 def get_evaluation_cases() -> List[EvaluationTestCase]:
     return BENCHMARK_CASES
+
+
+@router.get(
+    "/tts",
+    summary="High-fidelity Indic/Kannada speech synthesizer",
+    description="Generates native Kannada audio with authentic phonetics and Kannada numbers."
+)
+async def text_to_speech(text: str, lang: str = "kn"):
+    """
+    Streams high-fidelity, native Kannada MP3 audio so farmers hear authentic Kannada
+    pronunciation without depending on OS-installed voice packs.
+    """
+    if not text or not text.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+
+    clean = text.strip()
+    if lang == "kn":
+        clean = convert_all_numbers_to_kannada(clean)
+
+    # Clean markdown and formatting noise
+    clean = re.sub(r'[*#_~`•\[\]\(\)>]', ' ', clean)
+    clean = re.sub(r'\s+', ' ', clean).strip()
+
+    # Split into chunks of max 170 characters at natural pauses
+    chunks = []
+    current = ""
+    for piece in re.split(r'([.?!,।\n]+)', clean):
+        if not piece:
+            continue
+        if len(current) + len(piece) < 170:
+            current += piece
+        else:
+            if current.strip():
+                chunks.append(current.strip())
+            current = piece
+    if current.strip():
+        chunks.append(current.strip())
+
+    if not chunks:
+        chunks = [clean[:170]]
+
+    audio_bytes = bytearray()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        # Fetch up to first 6 chunks for fast audio stream
+        for chunk in chunks[:6]:
+            try:
+                resp = await client.get(
+                    "https://translate.google.com/translate_tts",
+                    params={"ie": "UTF-8", "tl": lang, "client": "tw-ob", "q": chunk},
+                    headers=headers
+                )
+                if resp.status_code == 200 and len(resp.content) > 100:
+                    audio_bytes.extend(resp.content)
+            except Exception:
+                continue
+
+    if not audio_bytes:
+        raise HTTPException(status_code=502, detail="Failed to synthesize speech audio")
+
+    return Response(content=bytes(audio_bytes), media_type="audio/mpeg")
+

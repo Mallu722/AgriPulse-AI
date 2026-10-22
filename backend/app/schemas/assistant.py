@@ -51,6 +51,7 @@ class AssistantResponse(BaseModel):
     assumptions_and_limitations: str = Field(..., description="Explicit disclosure of scope, assumptions, and missing information")
     abstention: bool = Field(default=False, description="True if system abstained due to lack of evidence or out-of-scope query")
     prompt_injection_flagged: bool = Field(default=False, description="True if query contained malicious prompt injection patterns")
+    spoken_answer: Optional[str] = Field(None, description="Pure, natural spoken text for speech audio readout without markdown or metadata")
 
 
 class KnowledgeSourceInfo(BaseModel):

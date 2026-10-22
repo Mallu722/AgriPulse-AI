@@ -172,6 +172,41 @@ class GroundedToolRegistry:
             "audit_hash_verified": True
         }
 
+    def get_market_price_with_highest(self, crop_name: str, district: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Look up verified APMC mandi prices for a commodity, identifying highest rate across Karnataka mandis."""
+        base_quote = self.get_market_price(crop_name, district)
+        if not base_quote:
+            return None
+
+        matched_crop = base_quote["commodity"]
+        mandi_data = CANONICAL_APMC_PRICES.get(matched_crop, {})
+
+        highest_quote = None
+        highest_modal = -1
+        other_markets = []
+        seen_yards = set()
+
+        for m_dist, q in mandi_data.items():
+            if m_dist == "Default" or q["market"] in seen_yards:
+                continue
+            seen_yards.add(q["market"])
+            item = {
+                "district": m_dist,
+                "market_yard": q["market"],
+                "modal_price": q["modal_price"],
+                "min_price": q["min_price"],
+                "max_price": q["max_price"],
+                "date": q["date"]
+            }
+            other_markets.append(item)
+            if q["modal_price"] > highest_modal:
+                highest_modal = q["modal_price"]
+                highest_quote = item
+
+        base_quote["highest_market"] = highest_quote
+        base_quote["other_markets"] = other_markets
+        return base_quote
+
     def calculate_economics(
         self,
         crop_name: str,
