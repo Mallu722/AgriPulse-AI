@@ -120,14 +120,14 @@ class GroundedRetriever:
             matched_q_toks = set(q_tok for q_tok in unique_q_toks if q_tok in doc_toks)
             query_coverage = len(matched_q_toks) / len(unique_q_toks) if unique_q_toks else 0.0
 
-            # If fewer than 25% of query concepts matched and only 1 token matched, penalize
-            if len(unique_q_toks) >= 4 and query_coverage < 0.35 and len(matched_q_toks) <= 1:
-                score *= 0.15
-
             # Also check direct keyword exact matches
             for kw in doc.get("keywords", []):
                 if kw.lower() in query.lower():
                     score += 0.8
+
+            # If fewer than 35% of query concepts matched and only 1 token matched, penalize
+            if len(unique_q_toks) >= 4 and query_coverage < 0.35 and len(matched_q_toks) <= 1:
+                score *= 0.15
 
             final_score = score * crop_boost
             if final_score > 0:

@@ -11,6 +11,7 @@ Strictly coordinates:
 """
 
 import re
+import uuid
 from typing import Dict, Any, Optional, List
 from app.schemas.assistant import AssistantRequest, AssistantResponse, Citation
 from app.rag.retriever import GroundedRetriever, detect_prompt_injection
@@ -442,7 +443,8 @@ class AgriPulseAssistant:
         # When user asks for price, DO NOT retrieve or dump agronomic planting/fertilizer guides!
         citations: List[Citation] = []
         if intent in ["AGRONOMY_ADVICE", "HYBRID", "GENERAL_AGRICULTURE"]:
-            citations, _ = self.retriever.retrieve(query, top_k=3, target_crop=detected_crop)
+            retrieval_query = f"{query} {detected_crop}" if detected_crop and detected_crop.lower() not in query.lower() else query
+            citations, _ = self.retriever.retrieve(retrieval_query, top_k=3, target_crop=detected_crop)
         elif intent == "MARKET_PRICE":
             # For market price, retrieve quality/grading standards citations only if applicable
             all_cits, _ = self.retriever.retrieve("APMC market standards quality grading", top_k=2, target_crop=detected_crop)
@@ -493,6 +495,14 @@ class AgriPulseAssistant:
             "Figures reflect canonical benchmarks and official Package of Practices. Local field conditions may vary."
         )
 
+        ans_id = f"ans_{uuid.uuid4().hex[:12]}"
+        if spoken_answer:
+            try:
+                from app.services.tts_service import store_server_answer
+                store_server_answer(ans_id, spoken_answer)
+            except Exception:
+                pass
+
         return AssistantResponse(
             query=query,
             detected_language=lang,
@@ -504,7 +514,8 @@ class AgriPulseAssistant:
             assumptions_and_limitations=assumptions,
             abstention=False,
             prompt_injection_flagged=False,
-            spoken_answer=spoken_answer
+            spoken_answer=spoken_answer,
+            answer_id=ans_id
         )
 
     async def _synthesize_grounded_response(

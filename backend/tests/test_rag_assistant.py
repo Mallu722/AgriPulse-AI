@@ -47,7 +47,12 @@ def test_retriever_bilingual_keyword_matching():
     assert has_ev_kn is True
     assert len(citations_kn) > 0
     assert any("Blast" in c.document_title or "ರೋಗ" in c.excerpt for c in citations_kn)
-    assert citations_kn[0].issuer in ["UAS Bengaluru & ICAR-IIMR", "UAS Bengaluru (University of Agricultural Sciences)"]
+    assert citations_kn[0].issuer in [
+        "UAS Bengaluru & ICAR-IIMR",
+        "UAS Bengaluru (University of Agricultural Sciences)",
+        "ICAR & UAS Dharwad Entomology Division",
+        "ICAR & UAS Dharwad Plant Pathology Division"
+    ]
 
     # English query for Tomato fertilizer NPK
     citations_en, has_ev_en = retriever.retrieve("What is the fertilizer NPK schedule for hybrid tomato?")
