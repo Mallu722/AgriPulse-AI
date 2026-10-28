@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Circle Gradient -->
+    <linearGradient id="agriBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#065f46" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#14532d" />
+    </linearGradient>
+
+    <!-- Golden Wheat & Sun Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fde047" />
+    </linearGradient>
+
+    <!-- Vibrant Sprout Leaf Gradient -->
+    <linearGradient id="leafGradLeft" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="60%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+
+    <linearGradient id="leafGradRight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#a7f3d0" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Circular Badge Base -->
+  <circle cx="32" cy="32" r="30" fill="url(#agriBg)" />
+  <circle cx="32" cy="32" r="29" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" opacity="0.85" />
+
+  <!-- Morning Sun of Prosperity -->
+  <circle cx="44" cy="20" r="7.5" fill="url(#goldGrad)" filter="url(#softGlow)" opacity="0.95" />
+  
+  <!-- Subtle Ray Accents -->
+  <path d="M44 9.5 V11 M44 29 V30.5 M33.5 20 H35 M53 20 H54.5" stroke="#fef08a" stroke-width="1.2" stroke-linecap="round" opacity="0.75" />
+
+  <!-- Fertile Soil Base Furrows / Pulse Waves -->
+  <path d="M14 47 Q32 42 50 47" fill="none" stroke="#a7f3d0" stroke-width="2.2" stroke-linecap="round" opacity="0.5" />
+  <path d="M19 51 Q32 47 45 51" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" opacity="0.8" />
+
+  <!-- Golden Wheat Stalk (Right Arch) -->
+  <path d="M32 44 Q43 36 41 18" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
+  <path d="M41 18 C43 16 46 17 45 20 C44 22 42 20 41 18 Z" fill="url(#goldGrad)" />
+  <path d="M39 22 C42 20 45 22 43 24.5 C42 26 39.5 24.5 39 22 Z" fill="url(#goldGrad)" />
+  <path d="M42 24 C45 23 47 25.5 45 27.5 C43.5 28.5 41.5 26.5 42 24 Z" fill="url(#goldGrad)" />
+  <path d="M37 28 C40 26.5 42.5 28.5 41 31 C39.5 32 37.5 30.5 37 28 Z" fill="url(#goldGrad)" />
+  <path d="M39 31 C42 30 43.5 32.5 41.5 34.5 C40 35.5 38 33.5 39 31 Z" fill="url(#goldGrad)" />
+
+  <!-- Central Flourishing Green Sprout Leaves (Precision Agriculture) -->
+  <path d="M32 44 C27 41 17 37 17 25 C17 19 23 16 26 17 C29 18 31 23 32 44 Z" fill="url(#leafGradLeft)" />
+  <path d="M32 44 C29 36 24 28 22 22" fill="none" stroke="#d1fae5" stroke-width="1.2" stroke-linecap="round" opacity="0.75" />
+  <path d="M32 44 C33 39 36 33 34 26 C33 22 30 22 29 23 C28 26 30 36 32 44 Z" fill="url(#leafGradRight)" />
+
+  <!-- Precision Digital Pulse Node at center -->
+  <circle cx="32" cy="44" r="2.2" fill="#fde047" />
+  <circle cx="32" cy="44" r="4" fill="none" stroke="#fde047" stroke-width="0.8" opacity="0.6" />
+</svg>

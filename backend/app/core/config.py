@@ -61,9 +61,30 @@ class Settings(BaseSettings):
         description="Base URL for LLM API (e.g. Ollama or OpenAI-compatible endpoint)."
     )
 
-    TTS_PROVIDER: Optional[str] = Field(default="google", description="TTS provider: google or bhashini.")
+    TTS_PROVIDER: str = Field(default="google", description="TTS provider: google, google_cloud, or bhashini.")
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(
         default=None, description="Path to Google Cloud service account JSON."
+    )
+    GOOGLE_TTS_API_KEY: Optional[str] = Field(
+        default=None, description="Google Cloud Text-to-Speech API Key."
+    )
+    BHASHINI_API_KEY: Optional[str] = Field(
+        default=None, description="BHASHINI ULCA API Key."
+    )
+    BHASHINI_USER_ID: Optional[str] = Field(
+        default=None, description="BHASHINI ULCA User ID."
+    )
+    BHASHINI_INFERENCE_ENDPOINT: Optional[str] = Field(
+        default="https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        description="BHASHINI Inference Pipeline Endpoint."
+    )
+    TTS_MAX_TEXT_LENGTH: int = Field(
+        default=600,
+        description="Maximum text character length allowed for synthesis."
+    )
+    TTS_RATE_LIMIT_PER_MINUTE: int = Field(
+        default=60,
+        description="Maximum synthesis requests allowed per client per minute."
     )
 
     @property

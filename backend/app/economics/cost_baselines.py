@@ -147,4 +147,110 @@ OFFICIAL_CROP_ECONOMICS: Dict[str, OfficialCropEconomicsReference] = {
         yield_median_quintals_per_acre=6.8,
         yield_p75_quintals_per_acre=9.0
     ),
+    "POTATO": OfficialCropEconomicsReference(
+        crop_code="POTATO",
+        crop_name="Potato",
+        report_year=2024,
+        source_citation="CPRI Shimla & UAS Bengaluru Horticultural Economics Bulletin 2023-24 (Hassan / Belagavi)",
+        costs=CostCategoryBreakdown(
+            seeds=14000.0,           # Seed tubers (8-10 qtl/acre @ 1400-1600/qtl)
+            fertilizer=6500.0,       # FYM, Complex 17:17:17, MOP
+            labour=8500.0,           # Furrow planting, earthing up, dehaulming
+            plant_protection=4200.0, # Late blight systemic fungicide (Metalaxyl + Mancozeb)
+            irrigation_power=2200.0, # Furrow/sprinkler irrigation
+            machinery_fuel=3800.0,   # Tractor tillage, ridge maker
+            harvesting=5500.0,       # Mechanical digger & manual picking/bagging
+            transport_per_quintal=65.0, # Transport to APMC Belgaum / Hassan
+            market_charges=800.0,
+            miscellaneous=1200.0
+        ),
+        yield_p25_quintals_per_acre=80.0,
+        yield_median_quintals_per_acre=105.0,
+        yield_p75_quintals_per_acre=130.0
+    ),
+    "CHILLI": OfficialCropEconomicsReference(
+        crop_code="CHILLI",
+        crop_name="Chilli",
+        report_year=2023,
+        source_citation="UAS Dharwad Commercial Horticulture Accounts & Byadgi APMC Economics Bulletin",
+        costs=CostCategoryBreakdown(
+            seeds=3800.0,            # F1 Hybrid seedlings (Byadgi / Arka Meghana)
+            fertilizer=6200.0,       # FYM, Urea, DAP, Potash, Micronutrients
+            labour=14000.0,          # Multiple picking passes, drying & bagging (35 person-days)
+            plant_protection=6500.0, # Mites, thrips, and anthracnose fruit rot protection
+            irrigation_power=2800.0, # Drip/furrow supplemental irrigation
+            machinery_fuel=3200.0,   # Land preparation, ridging
+            harvesting=7500.0,       # Selective ripe red fruit harvesting & sun yard drying
+            transport_per_quintal=80.0, # Freight to Byadgi / Kolar APMC
+            market_charges=1200.0,
+            miscellaneous=1500.0
+        ),
+        yield_p25_quintals_per_acre=12.0,    # Dry pod yield (equivalent)
+        yield_median_quintals_per_acre=16.5,
+        yield_p75_quintals_per_acre=22.0
+    ),
+    "GROUNDNUT": OfficialCropEconomicsReference(
+        crop_code="GROUNDNUT",
+        crop_name="Groundnut",
+        report_year=2023,
+        source_citation="DESAgri Oilseed Cost Survey (Tumakuru/Chitradurga) & UAS Bengaluru PoP",
+        costs=CostCategoryBreakdown(
+            seeds=4200.0,            # Pod kernel seeds (40 kg/acre TMV-2)
+            fertilizer=3200.0,       # Gypsum (200 kg), SSP, Potash, Rhizobium
+            labour=4800.0,           # Sowing, inter-cultivation, weeding
+            plant_protection=1200.0, # Tikka leaf spot spray
+            irrigation_power=1000.0, # 1-2 protective irrigations
+            machinery_fuel=2400.0,   # Summer ploughing & harrowing
+            harvesting=3600.0,       # Plant pulling, pod stripping, sun drying
+            transport_per_quintal=50.0, # Transport to Challakere / Tumakuru APMC
+            market_charges=500.0,
+            miscellaneous=600.0
+        ),
+        yield_p25_quintals_per_acre=6.5,
+        yield_median_quintals_per_acre=9.0,
+        yield_p75_quintals_per_acre=12.0
+    ),
+    "FRENCH_BEANS": OfficialCropEconomicsReference(
+        crop_code="FRENCH_BEANS",
+        crop_name="French Beans",
+        report_year=2024,
+        source_citation="IIHR Bengaluru Short Duration Vegetable Economics & Kolar Mandi Survey",
+        costs=CostCategoryBreakdown(
+            seeds=3200.0,            # Certified seed (Arka Komal / Anupama)
+            fertilizer=4500.0,       # FYM, 19:19:19 fertigation, neem cake
+            labour=7500.0,           # Staking, manual picking (3-4 flushes)
+            plant_protection=2800.0, # Rust and pod borer IPM
+            irrigation_power=1800.0, # Drip irrigation
+            machinery_fuel=2500.0,   # Raised bed preparation
+            harvesting=4200.0,       # Grading into 10kg gunny bags
+            transport_per_quintal=60.0, # Kolar / Bangalore Binny Mill transport
+            market_charges=700.0,
+            miscellaneous=800.0
+        ),
+        yield_p25_quintals_per_acre=35.0,
+        yield_median_quintals_per_acre=48.0,
+        yield_p75_quintals_per_acre=60.0
+    ),
+    "COTTON": OfficialCropEconomicsReference(
+        crop_code="COTTON",
+        crop_name="Cotton",
+        report_year=2023,
+        source_citation="DESAgri Commercial Fiber Cost of Cultivation (Haveri/Belagavi) 2023",
+        costs=CostCategoryBreakdown(
+            seeds=2400.0,            # Certified BG-II hybrid seed packets
+            fertilizer=5200.0,       # Split nitrogen top-dressing, magnesium sulphate, DAP
+            labour=9500.0,           # Inter-cultivation, 3-pass manual cotton boll picking
+            plant_protection=5500.0, # Sucking pest & bollworm IPM
+            irrigation_power=2000.0, # Furrow irrigation
+            machinery_fuel=3200.0,   # Deep tractor tillage
+            harvesting=6500.0,       # Clean lint harvesting & packaging
+            transport_per_quintal=70.0, # Transport to Haveri / Bailhongal APMC
+            market_charges=900.0,
+            miscellaneous=1000.0
+        ),
+        yield_p25_quintals_per_acre=8.0,
+        yield_median_quintals_per_acre=12.0,
+        yield_p75_quintals_per_acre=16.0
+    ),
 }
+

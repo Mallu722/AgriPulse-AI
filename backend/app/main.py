@@ -19,6 +19,7 @@ from app.api.economics import router as economics_router
 from app.api.weather import router as weather_router
 from app.api.ranking import router as ranking_router
 from app.api.assistant import router as assistant_router
+from app.api.tts import router as tts_router
 
 # --- Application Factory ---
 app = FastAPI(
@@ -49,6 +50,8 @@ app.include_router(economics_router, prefix="/api/v1", tags=["Economics & Profit
 app.include_router(weather_router, prefix="/api/v1", tags=["Meteorology & Weather Intelligence"])
 app.include_router(ranking_router, prefix="/api/v1", tags=["Transparent Crop Ranking & Recommendations"])
 app.include_router(assistant_router, prefix="/api/v1", tags=["RAG Assistant & Agricultural Guidance"])
+app.include_router(tts_router, prefix="/api/v1", tags=["Multilingual Text-to-Speech (TTS)"])
+
 
 
 # --- Root Redirect ---
