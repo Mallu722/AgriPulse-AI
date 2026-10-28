@@ -6,6 +6,7 @@ import {
   ChevronUp,
   Sliders
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface CostBreakdown {
   seeds: number;
@@ -76,9 +77,18 @@ interface Props {
 }
 
 export const EconomicsProfitScenarios: React.FC<Props> = ({ apiBase }) => {
+  const { profile } = useApp();
   const [cropCode, setCropCode] = useState('TOMATO');
-  const [district, setDistrict] = useState('Kolar');
-  const [landArea, setLandArea] = useState('2.5');
+  const [district, setDistrict] = useState(profile?.district || 'Kolar');
+  const [landArea, setLandArea] = useState(profile?.land_area_acres ? profile.land_area_acres.toString() : '3');
+
+  // Automatically sync when farmer changes their profile
+  useEffect(() => {
+    if (profile) {
+      if (profile.district) setDistrict(profile.district);
+      if (profile.land_area_acres) setLandArea(profile.land_area_acres.toString());
+    }
+  }, [profile?.district, profile?.land_area_acres]);
 
   // Overrides Accordion
   const [showOverrides, setShowOverrides] = useState(false);

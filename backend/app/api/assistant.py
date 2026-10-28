@@ -232,3 +232,28 @@ async def text_to_speech(text: str, lang: str = "kn"):
 
     return Response(content=bytes(audio_bytes), media_type="audio/mpeg")
 
+
+@router.get("/queries", summary="Retrieve logged farmer queries and knowledge store metrics")
+def get_farmer_query_logs(limit: int = 50):
+    """
+    Returns stored farmer queries, answers, and training database statistics.
+    All farmer questions are persisted in SQLite to continually train and refine the RAG system.
+    """
+    from app.db.query_store import get_recent_queries, get_database_stats
+    return {
+        "stats": get_database_stats(),
+        "recent_queries": get_recent_queries(limit=limit)
+    }
+
+
+@router.post("/train", summary="Train knowledge database with logged farmer interactions")
+def train_knowledge_database():
+    """
+    Synthesizes farmer interaction history, extracts frequent queries, and creates learned
+    knowledge documents that are indexed into the assistant's retrieval vector space.
+    """
+    from app.db.query_store import train_and_index_database
+    res = train_and_index_database()
+    return res
+
+

@@ -125,9 +125,11 @@ class GroundedRetriever:
                 if kw.lower() in query.lower():
                     score += 0.8
 
-            # If fewer than 35% of query concepts matched and only 1 token matched, penalize
-            if len(unique_q_toks) >= 4 and query_coverage < 0.35 and len(matched_q_toks) <= 1:
-                score *= 0.15
+            # If fewer than 35% of query concepts matched in multi-concept queries, heavily penalize incidental single-word matches
+            if len(unique_q_toks) >= 4 and query_coverage < 0.35:
+                score *= 0.02
+            elif len(unique_q_toks) >= 4 and query_coverage < 0.5:
+                score *= 0.25
 
             final_score = score * crop_boost
             if final_score > 0:

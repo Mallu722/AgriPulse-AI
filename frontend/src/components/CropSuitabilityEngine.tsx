@@ -8,8 +8,10 @@ import {
   XCircle,
   Send,
   BookOpen,
-  MapPin
+  MapPin,
+  RotateCw
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface ConstraintCheck {
   constraint_name: string;
@@ -69,28 +71,44 @@ interface Props {
 }
 
 export const CropSuitabilityEngine: React.FC<Props> = ({ apiBase }) => {
+  const { profile, updateProfile } = useApp();
   const [options, setOptions] = useState<ProfileOptions | null>(null);
 
-  // Form State
-  const [farmerName, setFarmerName] = useState('Basavaraj Bommai');
-  const [district, setDistrict] = useState('Kolar');
-  const [taluk, setTaluk] = useState('Srinivaspur');
-  const [landArea, setLandArea] = useState('3.5');
+  // Form State initialized dynamically from active Farmer Profile
+  const [farmerName, setFarmerName] = useState(profile?.farmer_name || 'ಮಲ್ಲಿಕಾರ್ಜುನ (Mallikarjun Gowda)');
+  const [district, setDistrict] = useState(profile?.district || 'Kolar');
+  const [taluk, setTaluk] = useState(profile?.taluk || 'Srinivaspur');
+  const [landArea, setLandArea] = useState(profile?.land_area_acres ? profile.land_area_acres.toString() : '3');
   const [landUnit, setLandUnit] = useState('acres');
-  const [season, setSeason] = useState('kharif');
-  const [waterAvailability, setWaterAvailability] = useState('reliable');
-  const [soilType, setSoilType] = useState('red_sandy_loam');
-  const [riskPreference, setRiskPreference] = useState('moderate');
+  const [season, setSeason] = useState<string>(profile?.season || 'kharif');
+  const [waterAvailability, setWaterAvailability] = useState<string>(profile?.water_availability || 'limited');
+  const [soilType, setSoilType] = useState(profile?.soil_type || 'red_sandy_loam');
+  const [riskPreference, setRiskPreference] = useState<string>(profile?.risk_preference || 'moderate');
 
-  // Soil Health Card optional fields
+  // Soil Health Card optional fields (synced with Profile vault)
   const [includeSHC, setIncludeSHC] = useState(true);
   const [shcLab, setShcLab] = useState('KVK Kolar Soil Testing Lab');
-  const [shcDate, setShcDate] = useState('2025-05-10');
-  const [shcPh, setShcPh] = useState('6.5');
+  const [shcDate, setShcDate] = useState('2026-10-18');
+  const [shcPh, setShcPh] = useState(profile?.soil_ph ? profile.soil_ph.toString() : '5.9');
   const [shcOrganicCarbon, setShcOrganicCarbon] = useState('0.62');
   const [shcN, setShcN] = useState('290');
   const [shcP, setShcP] = useState('32');
   const [shcK, setShcK] = useState('260');
+
+  // Sync state whenever the farmer edits their profile in other tabs
+  useEffect(() => {
+    if (profile) {
+      setFarmerName(profile.farmer_name);
+      setDistrict(profile.district);
+      setTaluk(profile.taluk || '');
+      setLandArea(profile.land_area_acres.toString());
+      setSoilType(profile.soil_type);
+      setShcPh(profile.soil_ph.toString());
+      setWaterAvailability(profile.water_availability);
+      setSeason(profile.season);
+      setRiskPreference(profile.risk_preference);
+    }
+  }, [profile.farmer_name, profile.district, profile.land_area_acres, profile.soil_type, profile.soil_ph, profile.water_availability, profile.season, profile.risk_preference]);
 
   // Results State
   const [evaluating, setEvaluating] = useState(false);
@@ -113,6 +131,19 @@ export const CropSuitabilityEngine: React.FC<Props> = ({ apiBase }) => {
     e.preventDefault();
     setEvaluating(true);
     setEvalError(null);
+
+    // Persist changes back to farmer profile context
+    updateProfile({
+      farmer_name: farmerName,
+      district,
+      taluk,
+      land_area_acres: parseFloat(landArea) || profile.land_area_acres,
+      soil_type: soilType,
+      soil_ph: shcPh ? parseFloat(shcPh) : profile.soil_ph,
+      water_availability: waterAvailability as any,
+      season: season as any,
+      risk_preference: riskPreference as any
+    });
 
     const payload: any = {
       farmer_name: farmerName,
@@ -258,6 +289,24 @@ export const CropSuitabilityEngine: React.FC<Props> = ({ apiBase }) => {
         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           Quick Load Real Profiles:
         </span>
+        <button
+          type="button"
+          onClick={() => {
+            setFarmerName(profile.farmer_name);
+            setDistrict(profile.district);
+            setTaluk(profile.taluk || '');
+            setLandArea(profile.land_area_acres.toString());
+            setSoilType(profile.soil_type);
+            setShcPh(profile.soil_ph.toString());
+            setWaterAvailability(profile.water_availability);
+            setSeason(profile.season);
+            setRiskPreference(profile.risk_preference);
+          }}
+          className="btn-primary"
+          style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'var(--primary)' }}
+        >
+          <RotateCw size={13} /> ನನ್ನ ಪ್ರೊಫೈಲ್ ({profile.land_area_acres} ಎಕರೆ • pH {profile.soil_ph} • {profile.water_availability})
+        </button>
         <button
           type="button"
           onClick={() => handlePresetSelect('kolar_reliable')}

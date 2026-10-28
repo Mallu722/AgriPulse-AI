@@ -356,7 +356,7 @@ def _load_village_qa_documents() -> List[Dict[str, Any]]:
 
     try:
         with open(data_file, "r", encoding="utf-8") as f:
-            for line in f:
+            for idx, line in enumerate(f):
                 line = line.strip()
                 if not line:
                     continue

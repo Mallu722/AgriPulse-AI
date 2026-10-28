@@ -28,8 +28,10 @@ class AgmarknetMandiAdapter(BaseIngestionAdapter):
     Supports official CSV ingestion, National OGD API pagination, and variety-wise datasets.
     """
 
-    # National OGD Agmarknet resource ID
-    NATIONAL_OGD_RESOURCE_ID = "6141ea17-a69d-4713-b600-0a43c8fd9a6c"
+    # Official National OGD Agmarknet resource IDs on data.gov.in
+    OGD_RESOURCE_DAILY_PRICES = "9ef84268-d588-465a-a308-a864a43d0070"
+    OGD_RESOURCE_VARIETY_WISE = "35985678-0d79-46b4-9ed6-6f13308a1d24"
+    NATIONAL_OGD_RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070"
 
     # Flexible column mappings supporting common Agmarknet variations
     COLUMN_ALIASES: Dict[str, List[str]] = {

@@ -146,4 +146,105 @@ CROP_CATALOGUE: Dict[str, CropKnowledgeEntry] = {
         water_intensity_mm="450 - 650 mm",
         economic_risk_profile="High"
     ),
+    "POTATO": CropKnowledgeEntry(
+        crop_code="POTATO",
+        crop_name="Potato",
+        kannada_name="ಆಲೂಗಡ್ಡೆ (Alugadde)",
+        category="Horticulture / Tuber",
+        duration_days_min=85,
+        duration_days_max=110,
+        suitable_seasons=[SowingSeason.KHARIF, SowingSeason.RABI],
+        min_water_requirement=WaterAvailability.LIMITED,
+        suitable_soils=[SoilType.RED_SANDY_LOAM, SoilType.ALLUVIAL, SoilType.SANDY],
+        optimal_ph_min=5.2,
+        optimal_ph_max=6.8,
+        suitable_districts=[
+            "Hassan", "Kolar", "Chikkaballapur", "Belagavi", "Bengaluru Rural"
+        ],
+        source_citation="ICAR - Central Potato Research Institute (CPRI), Shimla & UAS Bengaluru PoP (Kufri Jyoti)",
+        package_of_practices_ref="UAS Bengaluru PoP: Solanaceous Tubers, Seed Tuber Treatment with Mancozeb",
+        water_intensity_mm="400 - 550 mm",
+        economic_risk_profile="Moderate"
+    ),
+    "CHILLI": CropKnowledgeEntry(
+        crop_code="CHILLI",
+        crop_name="Green Chilli / Dry Chilli",
+        kannada_name="ಮೆಣಸಿನಕಾಯಿ (Menasinakayi)",
+        category="Horticulture / Spice",
+        duration_days_min=120,
+        duration_days_max=160,
+        suitable_seasons=[SowingSeason.KHARIF, SowingSeason.RABI],
+        min_water_requirement=WaterAvailability.LIMITED,
+        suitable_soils=[SoilType.RED_SANDY_LOAM, SoilType.BLACK_COTTON, SoilType.ALLUVIAL],
+        optimal_ph_min=5.8,
+        optimal_ph_max=7.5,
+        suitable_districts=[
+            "Haveri", "Dharwad", "Gadag", "Bellary", "Kolar", "Chikkaballapur", "Belagavi"
+        ],
+        source_citation="IIHR Bengaluru & UAS Dharwad Chilli Improvement Project (Byadgi Kaddi, Arka Meghana)",
+        package_of_practices_ref="UAS Dharwad PoP: Commercial Spices & Pest Management (Mites and Thrips)",
+        water_intensity_mm="450 - 650 mm",
+        economic_risk_profile="High"
+    ),
+    "GROUNDNUT": CropKnowledgeEntry(
+        crop_code="GROUNDNUT",
+        crop_name="Groundnut (Peanut)",
+        kannada_name="ಕಡಲೆಕಾಯಿ / ಶೇಂಗಾ (Shenga)",
+        category="Oilseed / Legume",
+        duration_days_min=105,
+        duration_days_max=125,
+        suitable_seasons=[SowingSeason.KHARIF, SowingSeason.SUMMER],
+        min_water_requirement=WaterAvailability.RAINFED,
+        suitable_soils=[SoilType.RED_SANDY_LOAM, SoilType.SANDY, SoilType.ALLUVIAL],
+        optimal_ph_min=5.5,
+        optimal_ph_max=7.2,
+        suitable_districts=[
+            "Tumakuru", "Chitradurga", "Chikkaballapur", "Kolar", "Ballari", "Raichur"
+        ],
+        source_citation="ICAR - Directorate of Groundnut Research (DGR) Junagadh & UAS Bengaluru (TMV-2, GPBD-4)",
+        package_of_practices_ref="UAS Bengaluru Zone 5 Package of Practices: Gypsum application @ 200 kg/acre at pegging",
+        water_intensity_mm="350 - 500 mm",
+        economic_risk_profile="Low"
+    ),
+    "FRENCH_BEANS": CropKnowledgeEntry(
+        crop_code="FRENCH_BEANS",
+        crop_name="French Beans",
+        kannada_name="ಹುರುಳಿಕಾಯಿ / ಬೀನ್ಸ್ (French Beans)",
+        category="Horticulture / Vegetable",
+        duration_days_min=65,
+        duration_days_max=85,
+        suitable_seasons=[SowingSeason.KHARIF, SowingSeason.RABI, SowingSeason.SUMMER, SowingSeason.ALL_SEASON],
+        min_water_requirement=WaterAvailability.LIMITED,
+        suitable_soils=[SoilType.RED_SANDY_LOAM, SoilType.CLAY_LOAM, SoilType.ALLUVIAL],
+        optimal_ph_min=5.5,
+        optimal_ph_max=6.8,
+        suitable_districts=[
+            "Kolar", "Bengaluru Rural", "Chikkaballapur", "Hassan", "Belagavi"
+        ],
+        source_citation="IIHR Bengaluru Horticulture Leaflet (Arka Komal, Arka Sharath)",
+        package_of_practices_ref="IIHR Package of Practices: Quick Turnover Leguminous Vegetables",
+        water_intensity_mm="350 - 450 mm",
+        economic_risk_profile="Moderate"
+    ),
+    "COTTON": CropKnowledgeEntry(
+        crop_code="COTTON",
+        crop_name="Cotton",
+        kannada_name="ಹತ್ತಿ (Hatti)",
+        category="Commercial Fiber",
+        duration_days_min=150,
+        duration_days_max=180,
+        suitable_seasons=[SowingSeason.KHARIF],
+        min_water_requirement=WaterAvailability.LIMITED,
+        suitable_soils=[SoilType.BLACK_COTTON, SoilType.CLAY_LOAM],
+        optimal_ph_min=6.5,
+        optimal_ph_max=8.5,
+        suitable_districts=[
+            "Haveri", "Belagavi", "Raichur", "Dharwad", "Ballari", "Mysuru"
+        ],
+        source_citation="ICAR - Central Institute for Cotton Research (CICR) & UAS Dharwad Bt Cotton PoP",
+        package_of_practices_ref="UAS Dharwad PoP: Commercial Bt Cotton High Density Planting System",
+        water_intensity_mm="600 - 800 mm",
+        economic_risk_profile="High"
+    ),
 }
+
