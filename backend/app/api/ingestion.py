@@ -7,7 +7,7 @@ dataset summaries, and retrieving machine-readable quality audit reports.
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
