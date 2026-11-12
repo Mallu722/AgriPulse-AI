@@ -8,7 +8,7 @@ import {
   Calculator,
   UserCheck,
   RefreshCw,
-  Sparkles,
+  Sprout,
   ShieldCheck,
   ArrowRight,
   Thermometer,
@@ -99,7 +99,7 @@ export const Dashboard: React.FC = () => {
       <section className="welcome-banner">
         <div className="welcome-left">
           <div className="welcome-badge">
-            <Sparkles size={16} />
+            <Sprout size={16} />
             <span>{t.dashboard.greeting}</span>
           </div>
           <h1 className="welcome-title">

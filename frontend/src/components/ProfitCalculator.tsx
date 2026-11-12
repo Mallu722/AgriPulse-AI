@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Calculator,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -146,7 +145,7 @@ export const ProfitCalculator: React.FC = () => {
 
       {/* Formula Card */}
       <div className="formula-banner">
-        <Sparkles size={20} className="text-primary" />
+        <Calculator size={20} className="text-primary" />
         <div className="formula-text">
           <strong>{t.profit.formulaTitle}:</strong>
           <p>{t.profit.formulaText}</p>

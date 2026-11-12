@@ -3,7 +3,6 @@ import axios from 'axios';
 import {
   Bot,
   Send,
-  Sparkles,
   ShieldCheck,
   BookOpen,
   ExternalLink,
@@ -854,7 +853,7 @@ export const AiAssistant: React.FC = () => {
           <span>ಶೂನ್ಯ ಕಲ್ಪಿತ ಬೆಲೆಗಳು (Zero Hallucinated Numbers)</span>
         </div>
         <div className="grounding-pill" title="ಕನ್ನಡ ಧ್ವನಿ ಸಂಶ್ಲೇಷಣೆ (Kannada TTS Engine)">
-          <Sparkles size={18} className="text-warning" />
+          <Volume2 size={18} className="text-warning" />
           <span>
             {ttsEngineStatus?.primary_engine
               ? `ಧ್ವನಿ: ${ttsEngineStatus.primary_engine === 'google_cloud_tts' ? 'Google Cloud Indic (kn-IN)' : ttsEngineStatus.primary_engine} • Bhashini Adapter`

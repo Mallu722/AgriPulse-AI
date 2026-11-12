@@ -1117,20 +1117,23 @@ class AgriPulseAssistant:
         tool_outputs: Dict[str, Any],
         conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> Optional[str]:
-        """Calls the configured LLM endpoint with grounded tool facts, multi-turn history, and document context."""
+        """Calls the configured LLM endpoint (Google Gemini or OpenAI-compatible) with grounded facts, multi-turn history, and agricultural context."""
         import httpx
 
         system_prompt = (
-            "You are AgriPulse AI, an expert, trustworthy agricultural decision support system for Karnataka farmers.\n"
+            "You are AgriPulse AI, an expert agricultural decision support system and advisor for Karnataka farmers.\n"
+            "You have deep expertise in Karnataka crops, ICAR/UAS Bangalore package of practices, pest & disease management, "
+            "fertilizer/NPK dosages, irrigation, government schemes (FRUITS, PM-Kisan, Raitha Siri), and APMC mandi market prices.\n"
             "CRITICAL INSTRUCTIONS:\n"
-            "1. Answer ONLY what the user explicitly asks. Never dump irrelevant information!\n"
-            "   - If the user asks for market price/rates, answer ONLY the 1 quintal price in their market and compare the highest rate across Karnataka mandis. DO NOT discuss cultivation, planting, seeds, or weather.\n"
-            "   - If the user asks about weather, answer ONLY weather and rain advisories. DO NOT discuss prices or costs.\n"
-            "   - If the user asks about agronomy/fertilizer/disease, answer ONLY the package of practices and treatment.\n"
-            "2. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE KANNADA.\n"
-            "3. Never hallucinate or invent prices, yields, or profits. Use ONLY the provided tool numbers and ICAR facts.\n"
-            "4. Structure your response clearly with helpful bullet points and keep it concise and farmer-friendly.\n"
-            "5. If previous conversation turns are present, maintain multi-turn continuity and directly connect your answer to the previous questions and answers."
+            "1. Answer the farmer's question directly, accurately, and thoroughly with practical actionable steps.\n"
+            "   - If the user asks for market price/rates, answer the 1 quintal price in their market and compare with top Karnataka mandis.\n"
+            "   - If the user asks about crop disease or pests, name the specific pest/pathogen and give exact pesticide/fungicide names and dosages per liter or acre.\n"
+            "   - If the user asks about fertilizers/nutrients, provide exact NPK ratios, basal vs top dressing stages, and organic alternatives.\n"
+            "   - If the user asks about government schemes or subsidies, clearly explain eligibility, portal (FRUITS/Seva Sindhu), and required documents (RTC Pahani).\n"
+            "2. When answering in Kannada (lang='kn'), YOU MUST WRITE ENTIRELY IN POLITE, FLUENT, ACCURATE, NATURAL KANNADA. Use respectful tone ('ನಮಸ್ಕಾರ', 'ರೈತ ಮಿತ್ರರೇ').\n"
+            "3. If verified tool data (market quotes, weather, unit economics) or official document citations are provided below, strictly prioritize those facts and numbers.\n"
+            "4. Structure your response clearly with helpful headings, bullet points, and dosages so it is easy for farmers to read and follow.\n"
+            "5. If previous conversation turns are present, maintain multi-turn continuity."
         )
 
         context_parts = []
@@ -1143,32 +1146,91 @@ class AgriPulseAssistant:
         elif intent == "PROFIT_ECONOMICS":
             if "unit_economics" in tool_outputs:
                 context_parts.append(f"UNIT ECONOMICS & COSTS: {tool_outputs['unit_economics']}")
+        elif intent == "CROP_RECOMMENDATION":
+            if "crop_ranking" in tool_outputs:
+                context_parts.append(f"VERIFIED CROP SUITABILITY & RANKING DATA: {tool_outputs['crop_ranking']}")
+        elif intent == "SOIL_HEALTH":
+            if "soil_health" in tool_outputs:
+                context_parts.append(f"FARM SOIL HEALTH CARD DATA: {tool_outputs['soil_health']}")
+        elif intent == "GOVT_SCHEMES":
+            if "govt_schemes" in tool_outputs:
+                context_parts.append(f"GOVERNMENT SCHEMES & VAULT DATA: {tool_outputs['govt_schemes']}")
         else:
             if tool_outputs:
                 context_parts.append(f"VERIFIED TOOL DATA: {tool_outputs}")
-            if citations:
-                excerpts_text = "\n".join([f"- [{c.issuer} - {c.document_title}]: {c.excerpt}" for c in citations])
-                context_parts.append(f"OFFICIAL GUIDELINE EXCERPTS:\n{excerpts_text}")
+
+        if citations:
+            excerpts_text = "\n".join([f"- [{c.issuer} - {c.document_title}]: {c.excerpt}" for c in citations])
+            context_parts.append(f"OFFICIAL GUIDELINE EXCERPTS:\n{excerpts_text}")
 
         user_content = (
             f"User Question: {query}\n"
             f"Target District: {district}\n"
             f"Target Language: {'Kannada' if lang == 'kn' else 'English'}\n\n"
-            + "\n\n".join(context_parts)
+            + ("\n\n".join(context_parts) if context_parts else "")
         )
 
-        messages = [
-            {"role": "system", "content": system_prompt}
-        ]
+        # Check if Google Gemini API should be used
+        is_google = (
+            settings.LLM_PROVIDER in ["google", "gemini"]
+            or (settings.LLM_API_KEY and (settings.LLM_API_KEY.startswith("AQ.") or settings.LLM_API_KEY.startswith("AIza")))
+        )
 
-        # Add prior conversation turns for multi-turn conversational awareness
+        if is_google and settings.LLM_API_KEY:
+            gemini_contents = []
+            if conversation_history:
+                for turn in conversation_history[-6:]:
+                    role = turn.get("role")
+                    content = turn.get("content")
+                    if content:
+                        g_role = "model" if role == "assistant" else "user"
+                        gemini_contents.append({"role": g_role, "parts": [{"text": content}]})
+
+            gemini_contents.append({"role": "user", "parts": [{"text": user_content}]})
+
+            gemini_payload = {
+                "system_instruction": {"parts": [{"text": system_prompt}]},
+                "contents": gemini_contents,
+                "generationConfig": {
+                    "temperature": 0.25,
+                    "maxOutputTokens": 1200
+                }
+            }
+
+            candidate_models = []
+            if settings.LLM_MODEL:
+                candidate_models.append(settings.LLM_MODEL)
+            for m in ["gemini-3.1-flash-lite-preview", "gemini-flash-latest", "gemini-3.8-flash"]:
+                if m not in candidate_models:
+                    candidate_models.append(m)
+
+            try:
+                async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0)) as client:
+                    for model in candidate_models:
+                        try:
+                            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={settings.LLM_API_KEY}"
+                            resp = await client.post(url, json=gemini_payload)
+                            if resp.status_code == 200:
+                                data = resp.json()
+                                candidates = data.get("candidates", [])
+                                if candidates:
+                                    parts = candidates[0].get("content", {}).get("parts", [])
+                                    if parts:
+                                        return parts[0].get("text", "")
+                        except Exception:
+                            continue
+            except Exception:
+                pass
+            return None
+
+        # Standard OpenAI / Groq / Ollama compatible endpoint
+        messages = [{"role": "system", "content": system_prompt}]
         if conversation_history:
             for turn in conversation_history[-6:]:
                 role = turn.get("role")
                 content = turn.get("content")
                 if role in ["user", "assistant"] and content:
                     messages.append({"role": role, "content": content})
-
         messages.append({"role": "user", "content": user_content})
 
         headers = {
@@ -1179,15 +1241,19 @@ class AgriPulseAssistant:
             "model": settings.LLM_MODEL or "llama3",
             "messages": messages,
             "temperature": 0.2,
-            "max_tokens": 800
+            "max_tokens": 1000
         }
 
         endpoint = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
-        async with httpx.AsyncClient(timeout=httpx.Timeout(4.0, connect=0.8)) as client:
-            resp = await client.post(endpoint, json=payload, headers=headers)
-            if resp.status_code == 200:
-                data = resp.json()
-                content = data.get("choices", [{}])[0].get("message", {}).get("content")
-                return content
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0)) as client:
+                resp = await client.post(endpoint, json=payload, headers=headers)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = data.get("choices", [{}])[0].get("message", {}).get("content")
+                    return content
+        except Exception:
             return None
+
+        return None
 
